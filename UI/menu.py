@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, QTimer, QDateTime
+from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import *
 
@@ -38,6 +38,7 @@ class Menu(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnLogout.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnTenant = QPushButton(self)
         self.btnTenant.setText("Tenant Inforamtion")
@@ -49,6 +50,7 @@ class Menu(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnTenant.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnInv = QPushButton(self)
         self.btnInv.setText("Market Inventories")
@@ -60,6 +62,7 @@ class Menu(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnInv.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnPayment = QPushButton(self)
         self.btnPayment.setText("Payment")
@@ -71,6 +74,7 @@ class Menu(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnPayment.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnReport = QPushButton(self)
         self.btnReport.setText("Revenue Report")
@@ -82,6 +86,7 @@ class Menu(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnReport.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnStaff = QPushButton(self)
         self.btnStaff.setText("Staff")
@@ -93,7 +98,7 @@ class Menu(QWidget):
                 background-color: #ffffff;
             """
         )
-        self.btnStaff.hide()
+        self.btnStaff.setCursor(Qt.CursorShape.PointingHandCursor)
         
     def update_clock(self):
         current_datetime = QDateTime.currentDateTime()

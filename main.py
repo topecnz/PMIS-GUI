@@ -15,6 +15,7 @@ class Main(QDialog):
         super().__init__()
         self.setFixedSize(QSize(1280, 720))
         
+        # Create an objects
         self.wLogin = login.Main()
         self.wMenu = menu.Menu()
         self.wTenant = tenant.Tenant()
@@ -23,6 +24,7 @@ class Main(QDialog):
         self.wReport = report.Report()
         self.wStaff = staff.Staff()
         
+        # Add objects to widget
         widget.addWidget(self.wLogin)
         widget.addWidget(self.wMenu)
         widget.addWidget(self.wTenant)
@@ -31,12 +33,15 @@ class Main(QDialog):
         widget.addWidget(self.wReport)
         widget.addWidget(self.wStaff)
         
-        self.login() #default
+        self.login() # default
         
     def login(self):
         widget.setCurrentWidget(self.wLogin)
         self.wLogin.btnLogin.clicked.connect(self.login_check)
-        # widget.setCurrentWidget(widget.currentIndex() + 1)
+        
+        # When Enter key is pressed
+        self.wLogin.tbUser.returnPressed.connect(self.login_check)
+        self.wLogin.tbPass.returnPressed.connect(self.login_check)
         
     def login_check(self):
         if self.wLogin.tbPass.text() == 'a':
@@ -57,6 +62,8 @@ class Main(QDialog):
         
         widget.setCurrentWidget(self.wMenu)
         self.wMenu.welcome.setText("Welcome back, %s!" % username)
+        
+        # button listener
         self.wMenu.btnLogout.clicked.connect(self.logout)
         self.wMenu.btnTenant.clicked.connect(self.tenant)
         self.wMenu.btnInv.clicked.connect(self.inventory)
@@ -64,9 +71,13 @@ class Main(QDialog):
         self.wMenu.btnReport.clicked.connect(self.report)
         self.wMenu.btnStaff.clicked.connect(self.staff)
         
+        # Check if the user is admin
+        # Note: this is an initial code via comparing username
         if username == 'topecnz':
             self.wMenu.btnStaff.show()
-        
+        else:
+            self.wMenu.btnStaff.hide()
+
     def logout(self):
         widget.setCurrentWidget(self.wLogin)
         
@@ -89,12 +100,13 @@ class Main(QDialog):
     def staff(self):        
         widget.setCurrentWidget(self.wStaff)
         self.wStaff.btnBack.clicked.connect(self.back)
-        
+    
+    # When back button is clicked
     def back(self):
         widget.setCurrentWidget(self.wMenu)
         
 
-# Creating Object    
+# Creating an object    
 app = QApplication(sys.argv)
 widget = QStackedWidget()
 

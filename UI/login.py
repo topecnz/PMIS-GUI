@@ -54,4 +54,5 @@ class Main(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnLogin.setCursor(Qt.CursorShape.PointingHandCursor)
         # self.btnLogin.setAlignment(Qt.AlignmentFlag.AlignCenter)
