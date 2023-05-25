@@ -133,7 +133,7 @@ class Tenant(QWidget):
         self.tbPhone.setValidator(QIntValidator().setBottom(0))
         
         self.lblCat = QLabel(self)
-        self.lblCat.setText("Category:")
+        self.lblCat.setText("Stall Size:")
         self.lblCat.setGeometry(640, 540, 140, 30)
         self.lblCat.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblCat.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -141,12 +141,12 @@ class Tenant(QWidget):
         self.tbCat = QComboBox(self)
         self.tbCat.setGeometry(800, 540, 450, 30)
         self.tbCat.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbCat.addItems(['','Meat', 'Vegetable', 'Fruit', 'Utility'])
+        self.tbCat.addItems(['','6M x 4M', '10M x 6M', '12M x 8M'])
         self.tbCat.setStyleSheet("background-color: #ffffff;")
         self.tbCat.currentIndexChanged.connect(self.category)
         
         self.lblCode = QLabel(self)
-        self.lblCode.setText("Code:")
+        self.lblCode.setText("Stall Code:")
         self.lblCode.setGeometry(640, 580, 140, 30)
         self.lblCode.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblCode.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -155,6 +155,39 @@ class Tenant(QWidget):
         self.tbCode.setGeometry(800, 580, 450, 30)
         self.tbCode.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         self.tbCode.setStyleSheet("background-color: #ffffff;")
+        
+        self.btnAdd = QPushButton(self)
+        self.btnAdd.setText("Add")
+        self.btnAdd.setGeometry(660, 640, 180, 40)
+        self.btnAdd.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnAdd.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
+        
+        self.btnUpdate = QPushButton(self)
+        self.btnUpdate.setText("Update")
+        self.btnUpdate.setGeometry(860, 640, 180, 40)
+        self.btnUpdate.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnUpdate.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
+        
+        self.btnRemove = QPushButton(self)
+        self.btnRemove.setText("Remove")
+        self.btnRemove.setGeometry(1060, 640, 180, 40)
+        self.btnRemove.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnRemove.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
             
     def search(self):
         msg = QMessageBox(self)
@@ -170,11 +203,9 @@ class Tenant(QWidget):
     def category(self):
         print(self.tbCat.currentText())
         self.tbCode.clear()
-        if self.tbCat.currentText() == 'Meat':
-            self.tbCode.addItems(['Meat', 'Vegetable', 'Fruit', 'Utility'])
-        elif self.tbCat.currentText() == 'Vegetable':
-            self.tbCode.addItems(['Meat1', 'Vegetable', 'Fruit', 'Utility'])
-        elif self.tbCat.currentText() == 'Fruit':
-            self.tbCode.addItems(['Meat2', 'Vegetable', 'Fruit', 'Utility'])
-        elif self.tbCat.currentText() == 'Utility':
-            self.tbCode.addItems(['Meat3', 'Vegetable', 'Fruit', 'Utility'])
+        if self.tbCat.currentText() == '6M x 4M':
+            self.tbCode.addItems(['6-4-001', '6-4-003', '6-4-003'])
+        elif self.tbCat.currentText() == '10M x 6M':
+            self.tbCode.addItems(['10-6-001', '10-6-003', '10-6-003'])
+        elif self.tbCat.currentText() == '12M x 8M':
+            self.tbCode.addItems(['12-8-001', '12-8-003', '12-8-003'])

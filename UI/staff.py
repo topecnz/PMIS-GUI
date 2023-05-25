@@ -69,91 +69,133 @@ class Staff(QWidget):
             self.table.setItem(row, 3, QTableWidgetItem("10001"))
             self.table.setItem(row, 4, QTableWidgetItem("10001"))
             
+        self.lblUser = QLabel(self)
+        self.lblUser.setText("Username:")
+        self.lblUser.setGeometry(640, 260, 140, 30)
+        self.lblUser.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.lblUser.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        self.tbUser = QLineEdit(self)
+        self.tbUser.setGeometry(800, 260, 450, 30)
+        self.tbUser.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+            
+        self.lblPasword = QLabel(self)
+        self.lblPasword.setText("Password:")
+        self.lblPasword.setGeometry(640, 300, 140, 30)
+        self.lblPasword.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.lblPasword.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        self.tbPasword = QLineEdit(self)
+        self.tbPasword.setGeometry(800, 300, 450, 30)
+        self.tbPasword.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+            
+        self.lblPosition = QLabel(self)
+        self.lblPosition.setText("Position:")
+        self.lblPosition.setGeometry(640, 340, 140, 30)
+        self.lblPosition.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.lblPosition.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        self.tbPosition = QComboBox(self)
+        self.tbPosition.setGeometry(800, 340, 450, 30)
+        self.tbPosition.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        self.tbPosition.addItems(['','Staff', 'Admin'])
+        self.tbPosition.setStyleSheet("background-color: #ffffff;")
+        
         self.lblFname = QLabel(self)
         self.lblFname.setText("First name:")
-        self.lblFname.setGeometry(640, 300, 140, 30)
+        self.lblFname.setGeometry(640, 380, 140, 30)
         self.lblFname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblFname.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.tbFname = QLineEdit(self)
-        self.tbFname.setGeometry(800, 300, 450, 30)
+        self.tbFname.setGeometry(800, 380, 450, 30)
         self.tbFname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         
         self.lblMname = QLabel(self)
         self.lblMname.setText("Middle name:")
-        self.lblMname.setGeometry(640, 340, 140, 30)
+        self.lblMname.setGeometry(640, 420, 140, 30)
         self.lblMname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblMname.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.tbMname = QLineEdit(self)
-        self.tbMname.setGeometry(800, 340, 450, 30)
+        self.tbMname.setGeometry(800, 420, 450, 30)
         self.tbMname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         
         self.lblLname = QLabel(self)
         self.lblLname.setText("Last name:")
-        self.lblLname.setGeometry(640, 380, 140, 30)
+        self.lblLname.setGeometry(640, 460, 140, 30)
         self.lblLname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblLname.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.tbLname = QLineEdit(self)
-        self.tbLname.setGeometry(800, 380, 450, 30)
+        self.tbLname.setGeometry(800, 460, 450, 30)
         self.tbLname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         
         self.lblBirth = QLabel(self)
         self.lblBirth.setText("Birthdate:")
-        self.lblBirth.setGeometry(640, 420, 140, 30)
+        self.lblBirth.setGeometry(640, 500, 140, 30)
         self.lblBirth.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblBirth.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.tbBirth = QDateEdit(self)
-        self.tbBirth.setGeometry(800, 420, 450, 30)
+        self.tbBirth.setGeometry(800, 500, 450, 30)
         self.tbBirth.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         self.tbBirth.setCalendarPopup(True)
         self.tbBirth.setDisplayFormat("yyyy/MM/dd")
         
         self.lblAdd = QLabel(self)
         self.lblAdd.setText("Address:")
-        self.lblAdd.setGeometry(640, 460, 140, 30)
+        self.lblAdd.setGeometry(640, 540, 140, 30)
         self.lblAdd.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblAdd.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.tbAdd = QLineEdit(self)
-        self.tbAdd.setGeometry(800, 460, 450, 30)
+        self.tbAdd.setGeometry(800, 540, 450, 30)
         self.tbAdd.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         
         self.lblPhone = QLabel(self)
         self.lblPhone.setText("Phone:")
-        self.lblPhone.setGeometry(640, 500, 140, 30)
+        self.lblPhone.setGeometry(640, 580, 140, 30)
         self.lblPhone.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblPhone.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.tbPhone = QLineEdit(self)
-        self.tbPhone.setGeometry(800, 500, 450, 30)
+        self.tbPhone.setGeometry(800, 580, 450, 30)
         self.tbPhone.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         self.tbPhone.setValidator(QIntValidator().setBottom(0))
         
-        self.lblCat = QLabel(self)
-        self.lblCat.setText("Category:")
-        self.lblCat.setGeometry(640, 540, 140, 30)
-        self.lblCat.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        self.lblCat.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        self.tbCat = QComboBox(self)
-        self.tbCat.setGeometry(800, 540, 450, 30)
-        self.tbCat.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbCat.addItems(['','Meat', 'Vegetable', 'Fruit', 'Utility'])
-        self.tbCat.setStyleSheet("background-color: #ffffff;")
+        self.btnAdd = QPushButton(self)
+        self.btnAdd.setText("Add")
+        self.btnAdd.setGeometry(660, 640, 180, 40)
+        self.btnAdd.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnAdd.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
         
-        self.lblCode = QLabel(self)
-        self.lblCode.setText("Code:")
-        self.lblCode.setGeometry(640, 580, 140, 30)
-        self.lblCode.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        self.lblCode.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        self.tbCode = QComboBox(self)
-        self.tbCode.setGeometry(800, 580, 450, 30)
-        self.tbCode.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbCode.setStyleSheet("background-color: #ffffff;")
+        self.btnUpdate = QPushButton(self)
+        self.btnUpdate.setText("Update")
+        self.btnUpdate.setGeometry(860, 640, 180, 40)
+        self.btnUpdate.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnUpdate.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
+        
+        self.btnRemove = QPushButton(self)
+        self.btnRemove.setText("Remove")
+        self.btnRemove.setGeometry(1060, 640, 180, 40)
+        self.btnRemove.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnRemove.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
             
     def search(self):
         msg = QMessageBox(self)
