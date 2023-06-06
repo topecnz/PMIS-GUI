@@ -1,22 +1,15 @@
-import mysql.connector
+import psycopg2
 import config
 
-class PosgresSQL():
+class PostgresSQL():
     def __init__(self):
         pass
     
     def connection(self):
-        return mysql.connector.connect(
-            username = config.user,
+        return psycopg2.connect(
+            user = config.user,
             password = config.password,
             host = config.host,
             port = config.port,
-            database = config.db,
-            connect_timeout = 1000
+            dbname = config.db
         )
-    
-    def sql_select():
-        pass
-    def sql_insert():
-        pass
-    
