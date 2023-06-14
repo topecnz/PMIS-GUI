@@ -29,27 +29,30 @@ class PostgreSQL():
         pgcursor = postgres.cursor()
         
         pgcursor.execute(query)
+        data = pgcursor.fetchone()
         postgres.commit()
         postgres.close()
         
-        return True
+        return data
     
     def update(self, query):
         postgres = self.connection()
         pgcursor = postgres.cursor()
         
         pgcursor.execute(query)
+        data = pgcursor.fetchone()
         postgres.commit()
         postgres.close()
         
-        return True
+        return data
     
     def delete(self, query):
         postgres = self.connection()
         pgcursor = postgres.cursor()
         
         pgcursor.execute(query)
+        data = pgcursor.fetchone()
         postgres.commit()
         postgres.close()
         
-        return True
+        return data

@@ -1,6 +1,9 @@
-from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize
+from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize, QDate
 from PyQt6.QtGui import QFont, QIntValidator
 from PyQt6.QtWidgets import *
+
+from db import connection
+from datetime import datetime 
 
 class Staff(QWidget):
     def __init__(self):
@@ -46,7 +49,7 @@ class Staff(QWidget):
         self.table.setColumnCount(5)
         self.table.setRowCount(15)
         
-        self.table.setHorizontalHeaderLabels(['Tenant ID', 'Lastname', 'Firstname', 'Phone', 'Date Added'])
+        self.table.setHorizontalHeaderLabels(['Account ID', 'Lastname', 'Firstname', 'Phone', 'Date Added'])
         self.table.verticalHeader().setVisible(False)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -61,13 +64,14 @@ class Staff(QWidget):
             """
         )
         self.btnBack.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.table.itemSelectionChanged.connect(self.updateFields)
         
-        for row in range(15):
-            self.table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-            self.table.setItem(row, 1, QTableWidgetItem("10001"))
-            self.table.setItem(row, 2, QTableWidgetItem("10001"))
-            self.table.setItem(row, 3, QTableWidgetItem("10001"))
-            self.table.setItem(row, 4, QTableWidgetItem("10001"))
+        # for row in range(15):
+        #     self.table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
+        #     self.table.setItem(row, 1, QTableWidgetItem("10001"))
+        #     self.table.setItem(row, 2, QTableWidgetItem("10001"))
+        #     self.table.setItem(row, 3, QTableWidgetItem("10001"))
+        #     self.table.setItem(row, 4, QTableWidgetItem("10001"))
             
         self.lblUser = QLabel(self)
         self.lblUser.setText("Username:")
@@ -175,6 +179,8 @@ class Staff(QWidget):
             """
         )
         
+        self.btnAdd.clicked.connect(self.addStaff)
+        
         self.btnUpdate = QPushButton(self)
         self.btnUpdate.setText("Update")
         self.btnUpdate.setGeometry(860, 640, 180, 40)
@@ -198,12 +204,91 @@ class Staff(QWidget):
         )
             
     def search(self):
-        msg = QMessageBox(self)
-        msg.setWindowTitle("Message")
-        msg.setText("Hello!")
-        msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        msg.setFixedSize(QSize(500, 250))
-        # msg.setIcon(QMessageBox.Icon.Critical)
-        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-        msg.setDefaultButton(QMessageBox.StandardButton.Ok)
-        msg.exec()
+        search = self.tbSearch.text()
+        self.table.clearContents() # clear everything before adding rows
+        data = postgres.select(f"SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE LOWER(CONCAT(ACC_ID, ' ', EMP_FNAME, ' ', EMP_LNAME)) LIKE LOWER('%{search}%');")
+        if data:
+            row = 0 # default
+            for res in data:
+                self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
+                self.table.setItem(row, 1, QTableWidgetItem(res[1]))
+                self.table.setItem(row, 2, QTableWidgetItem(res[2]))
+                self.table.setItem(row, 3, QTableWidgetItem(res[3]))
+                self.table.setItem(row, 4, QTableWidgetItem(str(datetime.strptime(str(res[4]).split(" ")[0], "%Y-%m-%d").strftime("%Y/%m/%d"))))
+                row = row + 1
+        else:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Message")
+            msg.setText("Entry not found!")
+            msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+            msg.setFixedSize(QSize(500, 250))
+            # msg.setIcon(QMessageBox.Icon.Critical)
+            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+            msg.exec()
+        
+    # functionalities
+    
+    def addStaff(self):
+        fname = self.tbFname.text()
+        lname = self.tbLname.text()
+        bd = self.tbBirth.text()
+        address = self.tbAdd.text()
+        phone = self.tbPhone.text()
+        data = postgres.insert(f"INSERT INTO EMPLOYEE (EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}') RETURNING EMP_ID")
+        if data:
+            username = self.tbUser.text()
+            password = self.tbPasword.text()
+            acc_type = self.tbPosition.currentIndex()
+            if postgres.update(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', ACC_TYPE_ID = '{acc_type}' WHERE EMP_ID = '{data[0]}' RETURNING ACC_ID"):
+                msg = QMessageBox(self)
+                msg.setWindowTitle("Message")
+                msg.setText("Staff Added!")
+                msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+                msg.setFixedSize(QSize(500, 250))
+                # msg.setIcon(QMessageBox.Icon.Critical)
+                msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+                msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+                msg.exec()
+                self.displayTable()
+            else:
+                print("Something went wrong!")
+        else:
+            print("Something went wrong!")
+    
+    def displayTable(self):
+        self.table.clearContents() # clear everything before adding rows
+        data = postgres.select("SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID);")
+        row = 0 # default
+        for res in data:
+            self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
+            self.table.setItem(row, 1, QTableWidgetItem(res[1]))
+            self.table.setItem(row, 2, QTableWidgetItem(res[2]))
+            self.table.setItem(row, 3, QTableWidgetItem(res[3]))
+            self.table.setItem(row, 4, QTableWidgetItem(str(datetime.strptime(str(res[4]).split(" ")[0], "%Y-%m-%d").strftime("%Y/%m/%d"))))
+            row = row + 1
+            
+    def updateFields(self):
+        item = self.table.selectedItems()
+        
+        if len(item) == 0:
+            return
+        
+        row = self.table.row(item[0])
+        id = self.table.item(row, 0).text()
+        res = postgres.select(f"SELECT ACC_USERNAME, ACC_PASSWORD, ACC_TYPE_ID, EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_ID = '{id}'")
+        
+        # fetch data from account id
+        data = res[0]
+        
+        self.tbUser.setText(data[0])
+        self.tbPasword.setText(data[1])
+        self.tbPosition.setCurrentIndex(int(data[2]))
+        self.tbFname.setText(data[3])
+        self.tbLname.setText(data[4])
+        self.tbBirth.setDate(QDate.fromString(str(data[5]), "yyyy/MM/dd"))
+        self.tbAdd.setText(data[6])
+        self.tbPhone.setText(data[7])
+
+# initialize some objects here
+postgres = connection.PostgreSQL()

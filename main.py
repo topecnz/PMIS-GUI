@@ -84,13 +84,14 @@ class Main(QDialog):
         self.wMenu.btnReport.clicked.connect(self.report)
         self.wMenu.btnStaff.clicked.connect(self.staff)
         
-        # Check if the user is admin
-        # Note: this is an initial code via comparing username
+        # Check if the user is admin, display Staff button.
         if cookies.data['type'] == 'Admin':
             self.wMenu.btnStaff.show()
         else:
             self.wMenu.btnStaff.hide()
 
+    # for back button listener only
+    
     def logout(self):
         cookies.data.clear() # remove all credentials
         widget.setCurrentWidget(self.wLogin)
@@ -113,6 +114,7 @@ class Main(QDialog):
 
     def staff(self):        
         widget.setCurrentWidget(self.wStaff)
+        self.wStaff.displayTable()
         self.wStaff.btnBack.clicked.connect(self.back)
     
     # When back button is clicked
