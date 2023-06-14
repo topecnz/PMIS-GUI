@@ -47,8 +47,18 @@ class Main(QDialog):
         self.wLogin.tbPass.returnPressed.connect(self.login_check)
         
     def login_check(self):
-        if self.wLogin.tbPass.text() == 'a':
-            self.menu(self.wLogin.tbUser.text())
+        # if self.wLogin.tbPass.text() == 'a':
+        #     self.menu(self.wLogin.tbUser.text())
+        username = self.wLogin.tbUser.text()
+        password = self.wLogin.tbPass.text()
+        data = postgres.select(f"SELECT ACC_ID, ACC_TYPE_ID, ACC_USERNAME FROM ACCOUNT INNER JOIN ACCOUNT_TYPE USING (ACC_TYPE_ID) WHERE ACC_USERNAME = '{username}' AND ACC_PASSWORD = '{password}';")
+        if data:
+            data = data[0]
+            cookies.data['id'] = data[0]
+            cookies.data['type'] = 'Staff' if data[1] == 1 else 'Admin'
+            cookies.data['username'] = data[2]
+            self.wLogin.tbPass.setText("") # remove password after logging in.
+            self.menu()
         else:
             msg = QMessageBox(self)
             msg.setWindowTitle("Message")
@@ -60,11 +70,11 @@ class Main(QDialog):
             msg.setDefaultButton(QMessageBox.StandardButton.Ok)
             msg.exec()
 
-    def menu(self, username):
+    def menu(self):
         # self.wLogin.deleteLater()
         
         widget.setCurrentWidget(self.wMenu)
-        self.wMenu.welcome.setText("Welcome back, %s!" % username)
+        self.wMenu.welcome.setText(f"Welcome back, {cookies.data['username']} ({cookies.data['id']})!")
         
         # button listener
         self.wMenu.btnLogout.clicked.connect(self.logout)
@@ -76,12 +86,13 @@ class Main(QDialog):
         
         # Check if the user is admin
         # Note: this is an initial code via comparing username
-        if username == 'topecnz':
+        if cookies.data['type'] == 'Admin':
             self.wMenu.btnStaff.show()
         else:
             self.wMenu.btnStaff.hide()
 
     def logout(self):
+        cookies.data.clear() # remove all credentials
         widget.setCurrentWidget(self.wLogin)
         
     def tenant(self):
@@ -112,6 +123,8 @@ class Main(QDialog):
 # Creating an object    
 app = QApplication(sys.argv)
 widget = QStackedWidget()
+postgres = connection.PostgreSQL()
+cookies = session.Session()
 
 window = Main()
 widget.addWidget(window)
