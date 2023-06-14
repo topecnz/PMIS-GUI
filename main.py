@@ -10,6 +10,9 @@ from UI import login, menu, tenant, inventory, payment, report, staff
 #database
 from db import connection
 
+#session
+import session
+
 class Main(QDialog):
     def __init__(self):
         super().__init__()
