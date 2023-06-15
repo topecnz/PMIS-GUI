@@ -51,7 +51,7 @@ class Main(QDialog):
         #     self.menu(self.wLogin.tbUser.text())
         username = self.wLogin.tbUser.text()
         password = self.wLogin.tbPass.text()
-        data = postgres.select(f"SELECT ACC_ID, ACC_TYPE_ID, ACC_USERNAME FROM ACCOUNT INNER JOIN ACCOUNT_TYPE USING (ACC_TYPE_ID) WHERE ACC_USERNAME = '{username}' AND ACC_PASSWORD = '{password}';")
+        data = postgres.select(f"SELECT ACC_ID, ACC_TYPE_ID, ACC_USERNAME FROM ACCOUNT WHERE ACC_USERNAME = '{username}' AND ACC_PASSWORD = '{password}';")
         if data:
             data = data[0]
             cookies.data['id'] = data[0]
