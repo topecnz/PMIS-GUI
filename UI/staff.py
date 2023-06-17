@@ -6,8 +6,12 @@ from db import connection
 from datetime import datetime 
 
 class Staff(QWidget):
-    def __init__(self):
+    def __init__(self, widget, cookies):
         super().__init__()
+        
+        # store data
+        self.widget = widget
+        self.cookies = cookies
         
         self.lblTitle = QLabel(self)
         
@@ -42,7 +46,6 @@ class Staff(QWidget):
         self.tbSearch = QLineEdit(self)
         self.tbSearch.setGeometry(120, 250, 480, 30)
         self.tbSearch.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbSearch.returnPressed.connect(self.search)
         
         self.table = QTableWidget(self)
         self.table.setGeometry(20, 290, 600, 400)
@@ -64,15 +67,18 @@ class Staff(QWidget):
             """
         )
         self.btnBack.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.table.itemSelectionChanged.connect(self.updateFields)
+
+        self.lblEmp = QLabel(self)
+        self.lblEmp.setText("")
+        self.lblEmp.setGeometry(640, 220, 140, 30)
+        self.lblEmp.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.lblEmp.setAlignment(Qt.AlignmentFlag.AlignRight)
         
-        # for row in range(15):
-        #     self.table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-        #     self.table.setItem(row, 1, QTableWidgetItem("10001"))
-        #     self.table.setItem(row, 2, QTableWidgetItem("10001"))
-        #     self.table.setItem(row, 3, QTableWidgetItem("10001"))
-        #     self.table.setItem(row, 4, QTableWidgetItem("10001"))
-            
+        self.lblId = QLabel(self)
+        self.lblId.setText("")
+        self.lblId.setGeometry(800, 215, 450, 30)
+        self.lblId.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        
         self.lblUser = QLabel(self)
         self.lblUser.setText("Username:")
         self.lblUser.setGeometry(640, 260, 140, 30)
@@ -92,6 +98,7 @@ class Staff(QWidget):
         self.tbPasword = QLineEdit(self)
         self.tbPasword.setGeometry(800, 300, 450, 30)
         self.tbPasword.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        self.tbPasword.setEchoMode(QLineEdit.EchoMode.Password)
             
         self.lblPosition = QLabel(self)
         self.lblPosition.setText("Position:")
@@ -107,23 +114,23 @@ class Staff(QWidget):
         
         self.lblFname = QLabel(self)
         self.lblFname.setText("First name:")
-        self.lblFname.setGeometry(640, 380, 140, 30)
+        self.lblFname.setGeometry(640, 420, 140, 30)
         self.lblFname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblFname.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.tbFname = QLineEdit(self)
-        self.tbFname.setGeometry(800, 380, 450, 30)
+        self.tbFname.setGeometry(800, 420, 450, 30)
         self.tbFname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         
-        self.lblMname = QLabel(self)
-        self.lblMname.setText("Middle name:")
-        self.lblMname.setGeometry(640, 420, 140, 30)
-        self.lblMname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        self.lblMname.setAlignment(Qt.AlignmentFlag.AlignRight)
+        # self.lblMname = QLabel(self)
+        # self.lblMname.setText("Middle name:")
+        # self.lblMname.setGeometry(640, 420, 140, 30)
+        # self.lblMname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        # self.lblMname.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        self.tbMname = QLineEdit(self)
-        self.tbMname.setGeometry(800, 420, 450, 30)
-        self.tbMname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        # self.tbMname = QLineEdit(self)
+        # self.tbMname.setGeometry(800, 420, 450, 30)
+        # self.tbMname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         
         self.lblLname = QLabel(self)
         self.lblLname.setText("Last name:")
@@ -178,12 +185,10 @@ class Staff(QWidget):
                 background-color: #ffffff;
             """
         )
-        
-        self.btnAdd.clicked.connect(self.addStaff)
-        
+
         self.btnUpdate = QPushButton(self)
         self.btnUpdate.setText("Update")
-        self.btnUpdate.setGeometry(860, 640, 180, 40)
+        self.btnUpdate.setGeometry(660, 640, 180, 40)
         self.btnUpdate.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnUpdate.setStyleSheet(
             """
@@ -191,10 +196,11 @@ class Staff(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnUpdate.setVisible(False)
         
         self.btnRemove = QPushButton(self)
         self.btnRemove.setText("Remove")
-        self.btnRemove.setGeometry(1060, 640, 180, 40)
+        self.btnRemove.setGeometry(860, 640, 180, 40)
         self.btnRemove.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnRemove.setStyleSheet(
             """
@@ -202,11 +208,33 @@ class Staff(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnRemove.setVisible(False)
+        
+        self.btnClear = QPushButton(self)
+        self.btnClear.setText("Clear")
+        self.btnClear.setGeometry(1060, 640, 180, 40)
+        self.btnClear.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnClear.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
+        self.btnClear.setVisible(False)
+        
+        #Listeners
+        
+        self.table.itemSelectionChanged.connect(self.updateFields)
+        self.tbSearch.returnPressed.connect(self.search)
+        self.btnAdd.clicked.connect(self.addStaff)
+        self.btnUpdate.clicked.connect(self.updateStaff)
+        self.btnRemove.clicked.connect(self.removeStaff)
+        self.btnClear.clicked.connect(self.clearFields)
             
     def search(self):
         search = self.tbSearch.text()
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select(f"SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE LOWER(CONCAT(ACC_ID, ' ', EMP_FNAME, ' ', EMP_LNAME)) LIKE LOWER('%{search}%');")
+        data = postgres.select(f"SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE LOWER(CONCAT(ACC_ID, ' ', EMP_FNAME, ' ', EMP_LNAME)) LIKE LOWER('%{search}%') AND ACC_TYPE_ID != 3 ORDER BY ACC_ID")
         if data:
             row = 0 # default
             for res in data:
@@ -255,10 +283,78 @@ class Staff(QWidget):
                 print("Something went wrong!")
         else:
             print("Something went wrong!")
+            
+    def updateStaff(self):
+        id = self.lblId.text()
+        fname = self.tbFname.text()
+        lname = self.tbLname.text()
+        bd = self.tbBirth.text()
+        address = self.tbAdd.text()
+        phone = self.tbPhone.text()
+        
+        data = postgres.update(f"UPDATE EMPLOYEE SET EMP_FNAME = '{fname}', EMP_LNAME = '{lname}', EMP_BIRTHDATE = '{bd}', EMP_ADDRESS = '{address}', EMP_PHONE = '{phone}' WHERE EMP_ID = {id} RETURNING EMP_ID")
+        
+        if data:
+            username = self.tbUser.text()
+            password = self.tbPasword.text()
+            acc_type = self.tbPosition.currentIndex()
+            
+            data = postgres.update(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', ACC_TYPE_ID = '{acc_type}' WHERE EMP_ID = {id} RETURNING EMP_ID")
+            
+            if data:
+                msg = QMessageBox(self)
+                msg.setWindowTitle("Message")
+                msg.setText("Staff Infomation Updated!")
+                msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+                msg.setFixedSize(QSize(500, 250))
+                # msg.setIcon(QMessageBox.Icon.Critical)
+                msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+                msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+                msg.exec()
+        
+        self.clearFields()
+        
+    def removeStaff(self):
+        id = self.lblId.text()
+        data = postgres.delete(f"DELETE FROM ACCOUNT WHERE EMP_ID = {id} RETURNING EMP_ID")
+        if data:
+            data = postgres.delete(f"DELETE FROM EMPLOYEE WHERE EMP_ID = {id} RETURNING EMP_ID")
+            if data:
+                msg = QMessageBox(self)
+                msg.setWindowTitle("Message")
+                msg.setText("Staff Infomation Removed!")
+                msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+                msg.setFixedSize(QSize(500, 250))
+                # msg.setIcon(QMessageBox.Icon.Critical)
+                msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+                msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+                msg.exec()
+
+        self.clearFields()
+        self.displayTable()
+
+    def clearFields(self):
+        # update buttons
+        self.btnAdd.setVisible(True)
+        self.btnUpdate.setVisible(False)
+        self.btnRemove.setVisible(False)
+        self.btnClear.setVisible(False)
+        
+        self.lblEmp.setText("")
+        self.lblId.setText("")
+        self.tbUser.clear()
+        self.tbPasword.clear()
+        self.tbPosition.setCurrentIndex(-1)
+        self.tbFname.clear()
+        self.tbLname.clear()
+        self.tbBirth.setDate(QDate())
+        self.tbAdd.clear()
+        self.tbPhone.clear()
     
     def displayTable(self):
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select("SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID);")
+        data = postgres.select("SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_TYPE_ID != 3 ORDER BY ACC_ID;")
+            
         row = 0 # default
         for res in data:
             self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
@@ -276,19 +372,27 @@ class Staff(QWidget):
         
         row = self.table.row(item[0])
         id = self.table.item(row, 0).text()
-        res = postgres.select(f"SELECT ACC_USERNAME, ACC_PASSWORD, ACC_TYPE_ID, EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_ID = '{id}'")
+        res = postgres.select(f"SELECT EMP_ID, ACC_USERNAME, ACC_PASSWORD, ACC_TYPE_ID, EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_ID = '{id}'")
         
         # fetch data from account id
         data = res[0]
         
-        self.tbUser.setText(data[0])
-        self.tbPasword.setText(data[1])
-        self.tbPosition.setCurrentIndex(int(data[2]))
-        self.tbFname.setText(data[3])
-        self.tbLname.setText(data[4])
-        self.tbBirth.setDate(QDate.fromString(str(data[5]), "yyyy/MM/dd"))
-        self.tbAdd.setText(data[6])
-        self.tbPhone.setText(data[7])
+        self.lblEmp.setText("Employee ID:")
+        self.lblId.setText(str(data[0]))
+        self.tbUser.setText(data[1])
+        self.tbPasword.setText(data[2])
+        self.tbPosition.setCurrentIndex(int(data[3]))
+        self.tbFname.setText(data[4])
+        self.tbLname.setText(data[5])
+        self.tbBirth.setDate(QDate.fromString(str(data[6]), "yyyy-MM-dd"))
+        self.tbAdd.setText(data[7])
+        self.tbPhone.setText(data[8])
+        
+        # update buttons
+        self.btnAdd.setVisible(False)
+        self.btnUpdate.setVisible(True)
+        self.btnRemove.setVisible(True)
+        self.btnClear.setVisible(True)
 
 # initialize some objects here
 postgres = connection.PostgreSQL()

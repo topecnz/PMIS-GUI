@@ -3,8 +3,12 @@ from PyQt6.QtGui import QFont, QIntValidator
 from PyQt6.QtWidgets import *
 
 class Inventory(QWidget):
-    def __init__(self):
+    def __init__(self, widget, cookies):
         super().__init__()
+        
+        # store data
+        self.widget = widget
+        self.cookies = cookies
         
         self.lblTitle = QLabel(self)
         

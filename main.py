@@ -19,13 +19,13 @@ class Main(QDialog):
         self.setFixedSize(QSize(1280, 720))
         
         # Create an objects
-        self.wLogin = login.Main()
-        self.wMenu = menu.Menu()
-        self.wTenant = tenant.Tenant()
-        self.wInventory = inventory.Inventory()
-        self.wPayment = payment.Payment()
-        self.wReport = report.Report()
-        self.wStaff = staff.Staff()
+        self.wLogin = login.Main(widget, cookies)
+        self.wMenu = menu.Menu(widget, cookies)
+        self.wTenant = tenant.Tenant(widget, cookies)
+        self.wInventory = inventory.Inventory(widget, cookies)
+        self.wPayment = payment.Payment(widget, cookies)
+        self.wReport = report.Report(widget, cookies)
+        self.wStaff = staff.Staff(widget, cookies)
         
         # Add objects to widget
         widget.addWidget(self.wLogin)
@@ -47,15 +47,13 @@ class Main(QDialog):
         self.wLogin.tbPass.returnPressed.connect(self.login_check)
         
     def login_check(self):
-        # if self.wLogin.tbPass.text() == 'a':
-        #     self.menu(self.wLogin.tbUser.text())
         username = self.wLogin.tbUser.text()
         password = self.wLogin.tbPass.text()
         data = postgres.select(f"SELECT ACC_ID, ACC_TYPE_ID, ACC_USERNAME FROM ACCOUNT WHERE ACC_USERNAME = '{username}' AND ACC_PASSWORD = '{password}';")
         if data:
             data = data[0]
             cookies.data['id'] = data[0]
-            cookies.data['type'] = 'Staff' if data[1] == 1 else 'Admin'
+            cookies.data['type'] = data[1]
             cookies.data['username'] = data[2]
             self.wLogin.tbPass.setText("") # remove password after logging in.
             self.menu()
@@ -84,8 +82,8 @@ class Main(QDialog):
         self.wMenu.btnReport.clicked.connect(self.report)
         self.wMenu.btnStaff.clicked.connect(self.staff)
         
-        # Check if the user is admin, display Staff button.
-        if cookies.data['type'] == 'Admin':
+        # Check if the user is not staff, display Staff button.
+        if cookies.data['type'] != 1:
             self.wMenu.btnStaff.show()
         else:
             self.wMenu.btnStaff.hide()
@@ -98,6 +96,8 @@ class Main(QDialog):
         
     def tenant(self):
         widget.setCurrentWidget(self.wTenant)
+        self.wTenant.displayTable()
+        self.wTenant.clearFields() # just to clear everything.
         self.wTenant.btnBack.clicked.connect(self.back)
 
     def inventory(self):        
@@ -115,6 +115,7 @@ class Main(QDialog):
     def staff(self):        
         widget.setCurrentWidget(self.wStaff)
         self.wStaff.displayTable()
+        self.wStaff.clearFields() # just to clear everything.
         self.wStaff.btnBack.clicked.connect(self.back)
     
     # When back button is clicked

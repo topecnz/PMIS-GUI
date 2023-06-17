@@ -1,10 +1,17 @@
-from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize
+from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize, QDate
 from PyQt6.QtGui import QFont, QIntValidator
 from PyQt6.QtWidgets import *
 
+from db import connection
+from datetime import datetime 
+
 class Tenant(QWidget):
-    def __init__(self):
+    def __init__(self, widget, cookies):
         super().__init__()
+        
+        # store data
+        self.widget = widget
+        self.cookies = cookies
         
         self.lblTitle = QLabel(self)
         
@@ -61,33 +68,37 @@ class Tenant(QWidget):
                 }
             """
         )
-        
-        for row in range(15):
-            self.table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-            self.table.setItem(row, 1, QTableWidgetItem("10001"))
-            self.table.setItem(row, 2, QTableWidgetItem("10001"))
-            self.table.setItem(row, 3, QTableWidgetItem("10001"))
-            self.table.setItem(row, 4, QTableWidgetItem("10001"))
             
+        # self.lblFname = QLabel(self)
+        # self.lblFname.setText("First name:")
+        # self.lblFname.setGeometry(640, 300, 140, 30)
+        # self.lblFname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        # self.lblFname.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+        # self.tbFname = QLineEdit(self)
+        # self.tbFname.setGeometry(800, 300, 450, 30)
+        # self.tbFname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        
+        self.lblTenant = QLabel()
+        self.lblTenant.setText("")
+        self.lblTenant.setGeometry(640, 300, 140, 30)
+        self.lblTenant.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.lblTenant.setAlignment(Qt.AlignmentFlag.AlignRight)
+        
+        self.lblId = QLabel()
+        self.lblId.setText("")
+        self.lblId.setGeometry(800, 300, 140, 30)
+        self.lblId.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        
         self.lblFname = QLabel(self)
         self.lblFname.setText("First name:")
-        self.lblFname.setGeometry(640, 300, 140, 30)
+        self.lblFname.setGeometry(640, 340, 140, 30)
         self.lblFname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblFname.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.tbFname = QLineEdit(self)
-        self.tbFname.setGeometry(800, 300, 450, 30)
+        self.tbFname.setGeometry(800, 340, 450, 30)
         self.tbFname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        
-        self.lblMname = QLabel(self)
-        self.lblMname.setText("Middle name:")
-        self.lblMname.setGeometry(640, 340, 140, 30)
-        self.lblMname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        self.lblMname.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        self.tbMname = QLineEdit(self)
-        self.tbMname.setGeometry(800, 340, 450, 30)
-        self.tbMname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         
         self.lblLname = QLabel(self)
         self.lblLname.setText("Last name:")
@@ -143,7 +154,7 @@ class Tenant(QWidget):
         self.tbCat.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         self.tbCat.addItems(['','6M x 4M', '10M x 6M', '12M x 8M'])
         self.tbCat.setStyleSheet("background-color: #ffffff;")
-        self.tbCat.currentIndexChanged.connect(self.category)
+        # self.tbCat.currentIndexChanged.connect(self.category)
         
         self.lblCode = QLabel(self)
         self.lblCode.setText("Stall Code:")
@@ -166,10 +177,10 @@ class Tenant(QWidget):
                 background-color: #ffffff;
             """
         )
-        
+
         self.btnUpdate = QPushButton(self)
         self.btnUpdate.setText("Update")
-        self.btnUpdate.setGeometry(860, 640, 180, 40)
+        self.btnUpdate.setGeometry(660, 640, 180, 40)
         self.btnUpdate.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnUpdate.setStyleSheet(
             """
@@ -177,10 +188,11 @@ class Tenant(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnUpdate.setVisible(False)
         
         self.btnRemove = QPushButton(self)
         self.btnRemove.setText("Remove")
-        self.btnRemove.setGeometry(1060, 640, 180, 40)
+        self.btnRemove.setGeometry(860, 640, 180, 40)
         self.btnRemove.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnRemove.setStyleSheet(
             """
@@ -188,24 +200,42 @@ class Tenant(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnRemove.setVisible(False)
+        
+        self.btnClear = QPushButton(self)
+        self.btnClear.setText("Clear")
+        self.btnClear.setGeometry(1060, 640, 180, 40)
+        self.btnClear.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnClear.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
+        self.btnClear.setVisible(False)
             
     def search(self):
-        msg = QMessageBox(self)
-        msg.setWindowTitle("Message")
-        msg.setText("Hello!")
-        msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        msg.setFixedSize(QSize(500, 250))
-        # msg.setIcon(QMessageBox.Icon.Critical)
-        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-        msg.setDefaultButton(QMessageBox.StandardButton.Ok)
-        msg.exec()
+        pass
         
-    def category(self):
-        print(self.tbCat.currentText())
-        self.tbCode.clear()
-        if self.tbCat.currentText() == '6M x 4M':
-            self.tbCode.addItems(['6-4-001', '6-4-003', '6-4-003'])
-        elif self.tbCat.currentText() == '10M x 6M':
-            self.tbCode.addItems(['10-6-001', '10-6-003', '10-6-003'])
-        elif self.tbCat.currentText() == '12M x 8M':
-            self.tbCode.addItems(['12-8-001', '12-8-003', '12-8-003'])
+    # functionalities
+    
+    def addTenant(self):
+        pass
+            
+    def updateTenant(self):
+        pass
+        
+    def removeTenant(self):
+        pass
+
+    def clearFields(self):
+        pass
+    
+    def displayTable(self):
+        pass
+            
+    def updateFields(self):
+        pass
+
+# initialize some objects here
+postgres = connection.PostgreSQL()
