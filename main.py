@@ -109,6 +109,8 @@ class Main(QDialog):
 
     def payment(self):        
         widget.setCurrentWidget(self.wPayment)
+        self.wPayment.displayTable()
+        self.wPayment.clearFields()
         self.wPayment.btnBack.clicked.connect(self.back)
 
     def report(self):        
