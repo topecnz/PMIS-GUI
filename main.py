@@ -103,6 +103,8 @@ class Main(QDialog):
 
     def inventory(self):        
         widget.setCurrentWidget(self.wInventory)
+        self.wInventory.displayTable()
+        self.wInventory.clearFields() # just to clear everything.
         self.wInventory.btnBack.clicked.connect(self.back)
 
     def payment(self):        

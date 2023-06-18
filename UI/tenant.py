@@ -48,7 +48,6 @@ class Tenant(QWidget):
         self.tbSearch = QLineEdit(self)
         self.tbSearch.setGeometry(120, 250, 480, 30)
         self.tbSearch.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbSearch.returnPressed.connect(self.search)
         
         self.table = QTableWidget(self)
         self.table.setGeometry(20, 290, 600, 400)
@@ -238,7 +237,20 @@ class Tenant(QWidget):
     # functionalities        
     
     def search(self):
-        pass
+        search = self.tbSearch.text()
+        self.table.clearContents() # clear everything before adding rows
+        data = postgres.select(f"SELECT TEN_ID, TEN_LNAME, TEN_FNAME, TEN_PHONE, TEN_CREATED_AT FROM TENANT WHERE LOWER(CONCAT(TEN_ID, ' ', TEN_FNAME, ' ', TEN_LNAME)) LIKE LOWER('%{search}%') ORDER BY TEN_ID")
+        if data:
+            row = 0 # default
+            for res in data:
+                self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
+                self.table.setItem(row, 1, QTableWidgetItem(res[1]))
+                self.table.setItem(row, 2, QTableWidgetItem(res[2]))
+                self.table.setItem(row, 3, QTableWidgetItem(res[3]))
+                self.table.setItem(row, 4, QTableWidgetItem(str(datetime.strptime(str(res[4]).split(" ")[0], "%Y-%m-%d").strftime("%Y/%m/%d"))))
+                row = row + 1
+        else:
+            self.popupMessage("Entry not found!")
     
     def addTenant(self):
         fname = self.tbFname.text()
@@ -302,7 +314,7 @@ class Tenant(QWidget):
     
     def displayTable(self):
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select("SELECT TEN_ID, TEN_LNAME, TEN_FNAME, TEN_PHONE, TEN_CREATED_AT FROM TENANT ORDER BY TEN_ID;")
+        data = postgres.select("SELECT TEN_ID, TEN_LNAME, TEN_FNAME, TEN_PHONE, TEN_CREATED_AT FROM TENANT WHERE TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
             
         row = 0 # default
         for res in data:
@@ -321,7 +333,7 @@ class Tenant(QWidget):
         
         row = self.table.row(item[0])
         id = self.table.item(row, 0).text()
-        res = postgres.select(f"SELECT TEN_ID, TEN_FNAME, TEN_LNAME, TEN_BIRTHDATE, TEN_ADDRESS, TEN_PHONE, STA_TYPE_ID FROM TENANT INNER JOIN STALL USING (TEN_ID) WHERE TEN_ID = '{id}'")
+        res = postgres.select(f"SELECT TEN_ID, TEN_FNAME, TEN_LNAME, TEN_BIRTHDATE, TEN_ADDRESS, TEN_PHONE, STA_TYPE_ID FROM TENANT INNER JOIN STALL USING (TEN_ID) WHERE TEN_ID = '{id}' AND TEN_STATUS != 'Removed' ORDER BY TEN_ID")
         
         # fetch data from account id
         data = res[0]
