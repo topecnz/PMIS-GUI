@@ -96,6 +96,7 @@ class Main(QDialog):
         
     def tenant(self):
         widget.setCurrentWidget(self.wTenant)
+        self.wTenant.stallCat()
         self.wTenant.displayTable()
         self.wTenant.clearFields() # just to clear everything.
         self.wTenant.btnBack.clicked.connect(self.back)

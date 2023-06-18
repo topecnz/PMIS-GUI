@@ -12,6 +12,7 @@ class Tenant(QWidget):
         # store data
         self.widget = widget
         self.cookies = cookies
+        self.category = ['']
         
         self.lblTitle = QLabel(self)
         
@@ -152,20 +153,20 @@ class Tenant(QWidget):
         self.tbCat = QComboBox(self)
         self.tbCat.setGeometry(800, 540, 450, 30)
         self.tbCat.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbCat.addItems(['','6M x 4M', '10M x 6M', '12M x 8M'])
+        self.tbCat.addItems(self.category)
         self.tbCat.setStyleSheet("background-color: #ffffff;")
         # self.tbCat.currentIndexChanged.connect(self.category)
         
-        self.lblCode = QLabel(self)
-        self.lblCode.setText("Stall Code:")
-        self.lblCode.setGeometry(640, 580, 140, 30)
-        self.lblCode.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        self.lblCode.setAlignment(Qt.AlignmentFlag.AlignRight)
+        # self.lblCode = QLabel(self)
+        # self.lblCode.setText("Stall Code:")
+        # self.lblCode.setGeometry(640, 580, 140, 30)
+        # self.lblCode.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        # self.lblCode.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        self.tbCode = QComboBox(self)
-        self.tbCode.setGeometry(800, 580, 450, 30)
-        self.tbCode.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbCode.setStyleSheet("background-color: #ffffff;")
+        # self.tbCode = QComboBox(self)
+        # self.tbCode.setGeometry(800, 580, 450, 30)
+        # self.tbCode.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        # self.tbCode.setStyleSheet("background-color: #ffffff;")
         
         self.btnAdd = QPushButton(self)
         self.btnAdd.setText("Add")
@@ -213,29 +214,140 @@ class Tenant(QWidget):
             """
         )
         self.btnClear.setVisible(False)
-            
+        
+        #Listeners
+        
+        self.table.itemSelectionChanged.connect(self.updateFields)
+        self.tbSearch.returnPressed.connect(self.search)
+        self.btnAdd.clicked.connect(self.addTenant)
+        self.btnUpdate.clicked.connect(self.updateTenant)
+        self.btnRemove.clicked.connect(self.removeTenant)
+        self.btnClear.clicked.connect(self.clearFields)
+        
+    def popupMessage(self, message):
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Message")
+        msg.setText(message)
+        msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        msg.setFixedSize(QSize(500, 250))
+        # msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+        msg.exec()
+    
+    # functionalities        
+    
     def search(self):
         pass
-        
-    # functionalities
     
     def addTenant(self):
-        pass
+        fname = self.tbFname.text()
+        lname = self.tbLname.text()
+        bd = self.tbBirth.text()
+        address = self.tbAdd.text()
+        phone = self.tbPhone.text()
+        category = self.tbCat.currentIndex()
+        data = postgres.query(f"INSERT INTO TENANT (TEN_FNAME, TEN_LNAME, TEN_BIRTHDATE, TEN_ADDRESS, TEN_PHONE) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}') RETURNING TEN_ID")
+        if data:
+            data = postgres.query(f"INSERT INTO STALL (STA_TYPE_ID, TEN_ID) VALUES ({category}, {data[0]}) RETURNING STA_ID;")
+            if data:
+                self.popupMessage("Tenant info added!")
+                self.displayTable()
+        else:
+            print("Something went wrong!")
             
+        self.clearFields()
+        
     def updateTenant(self):
-        pass
+        id = self.lblId.text()
+        fname = self.tbFname.text()
+        lname = self.tbLname.text()
+        bd = self.tbBirth.text()
+        address = self.tbAdd.text()
+        phone = self.tbPhone.text()
+        category = self.tbCat.currentIndex()
+        data = postgres.query(f"UPDATE TENANT SET TEN_FNAME = '{fname}', TEN_LNAME = '{lname}', TEN_BIRTHDATE = '{bd}', TEN_ADDRESS = '{address}', TEN_PHONE = '{phone}' WHERE TEN_ID = {id} RETURNING TEN_ID")
+
+        if data:            
+            data = postgres.query(f"UPDATE STALL SET STA_TYPE_ID = {category} WHERE TEN_ID = {id} RETURNING TEN_ID")
+            if data:
+                self.popupMessage("Tenant info updated!")
+                self.displayTable()
+        
+        self.clearFields()
         
     def removeTenant(self):
-        pass
+        id = self.lblId.text()
+        data = postgres.query(f"UPDATE TENANT SET TEN_STATUS = 'Removed' WHERE TEN_ID = {id} RETURNING TEN_ID")
+        if data:
+            self.popupMessage("tenant info removed!")
+
+        self.clearFields()
+        self.displayTable()
 
     def clearFields(self):
-        pass
+        self.btnAdd.setVisible(True)
+        self.btnUpdate.setVisible(False)
+        self.btnRemove.setVisible(False)
+        self.btnClear.setVisible(False)
+        
+        self.lblTenant.setText("")
+        self.lblId.setText("")
+        self.tbCat.setCurrentIndex(-1)
+        self.tbFname.clear()
+        self.tbLname.clear()
+        self.tbBirth.setDate(QDate())
+        self.tbAdd.clear()
+        self.tbPhone.clear()
     
     def displayTable(self):
-        pass
+        self.table.clearContents() # clear everything before adding rows
+        data = postgres.select("SELECT TEN_ID, TEN_LNAME, TEN_FNAME, TEN_PHONE, TEN_CREATED_AT FROM TENANT ORDER BY TEN_ID;")
+            
+        row = 0 # default
+        for res in data:
+            self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
+            self.table.setItem(row, 1, QTableWidgetItem(res[1]))
+            self.table.setItem(row, 2, QTableWidgetItem(res[2]))
+            self.table.setItem(row, 3, QTableWidgetItem(res[3]))
+            self.table.setItem(row, 4, QTableWidgetItem(str(datetime.strptime(str(res[4]).split(" ")[0], "%Y-%m-%d").strftime("%Y/%m/%d"))))
+            row = row + 1
             
     def updateFields(self):
-        pass
+        item = self.table.selectedItems()
+        
+        if len(item) == 0:
+            return
+        
+        row = self.table.row(item[0])
+        id = self.table.item(row, 0).text()
+        res = postgres.select(f"SELECT TEN_ID, TEN_FNAME, TEN_LNAME, TEN_BIRTHDATE, TEN_ADDRESS, TEN_PHONE, STA_TYPE_ID FROM TENANT INNER JOIN STALL USING (TEN_ID) WHERE TEN_ID = '{id}'")
+        
+        # fetch data from account id
+        data = res[0]
+        
+        self.lblTenant.setText("Employee ID:")
+        self.lblId.setText(str(data[0]))
+        self.tbFname.setText(data[1])
+        self.tbLname.setText(data[2])
+        self.tbBirth.setDate(QDate.fromString(str(data[3]), "yyyy-MM-dd"))
+        self.tbAdd.setText(data[4])
+        self.tbPhone.setText(data[5])
+        self.tbCat.setCurrentIndex(data[6])
+        
+        # update buttons
+        self.btnAdd.setVisible(False)
+        self.btnUpdate.setVisible(True)
+        self.btnRemove.setVisible(True)
+        self.btnClear.setVisible(True)
+    
+    def stallCat(self):
+        self.category.clear()
+        data = postgres.select("SELECT STA_TYPE_NAME FROM STALL_TYPE ORDER BY STA_TYPE_ID;")
+        for r in data:
+            self.category.append(r[0])
+            
+        self.tbCat.addItems(self.category)
 
 # initialize some objects here
 postgres = connection.PostgreSQL()

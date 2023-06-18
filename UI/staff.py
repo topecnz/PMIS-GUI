@@ -230,6 +230,17 @@ class Staff(QWidget):
         self.btnUpdate.clicked.connect(self.updateStaff)
         self.btnRemove.clicked.connect(self.removeStaff)
         self.btnClear.clicked.connect(self.clearFields)
+        
+    def popupMessage(self, message):
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Message")
+        msg.setText(message)
+        msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        msg.setFixedSize(QSize(500, 250))
+        # msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+        msg.exec()
             
     def search(self):
         search = self.tbSearch.text()
@@ -245,15 +256,7 @@ class Staff(QWidget):
                 self.table.setItem(row, 4, QTableWidgetItem(str(datetime.strptime(str(res[4]).split(" ")[0], "%Y-%m-%d").strftime("%Y/%m/%d"))))
                 row = row + 1
         else:
-            msg = QMessageBox(self)
-            msg.setWindowTitle("Message")
-            msg.setText("Entry not found!")
-            msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-            msg.setFixedSize(QSize(500, 250))
-            # msg.setIcon(QMessageBox.Icon.Critical)
-            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-            msg.setDefaultButton(QMessageBox.StandardButton.Ok)
-            msg.exec()
+            self.popupMessage("Entry not found!")
         
     # functionalities
     
@@ -263,26 +266,20 @@ class Staff(QWidget):
         bd = self.tbBirth.text()
         address = self.tbAdd.text()
         phone = self.tbPhone.text()
-        data = postgres.insert(f"INSERT INTO EMPLOYEE (EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}') RETURNING EMP_ID")
+        data = postgres.query(f"INSERT INTO EMPLOYEE (EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}') RETURNING EMP_ID")
         if data:
             username = self.tbUser.text()
             password = self.tbPasword.text()
             acc_type = self.tbPosition.currentIndex()
-            if postgres.update(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', ACC_TYPE_ID = '{acc_type}' WHERE EMP_ID = '{data[0]}' RETURNING ACC_ID"):
-                msg = QMessageBox(self)
-                msg.setWindowTitle("Message")
-                msg.setText("Staff Added!")
-                msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-                msg.setFixedSize(QSize(500, 250))
-                # msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-                msg.setDefaultButton(QMessageBox.StandardButton.Ok)
-                msg.exec()
+            if postgres.query(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', ACC_TYPE_ID = '{acc_type}' WHERE EMP_ID = '{data[0]}' RETURNING ACC_ID"):
+                self.popupMessage("Staff info added!")
                 self.displayTable()
             else:
-                print("Something went wrong!")
+                self.popupMessage("Something went wrong!")
         else:
-            print("Something went wrong!")
+            self.popupMessage("Something went wrong!")
+            
+        self.clearFields()
             
     def updateStaff(self):
         id = self.lblId.text()
@@ -291,44 +288,26 @@ class Staff(QWidget):
         bd = self.tbBirth.text()
         address = self.tbAdd.text()
         phone = self.tbPhone.text()
-        
-        data = postgres.update(f"UPDATE EMPLOYEE SET EMP_FNAME = '{fname}', EMP_LNAME = '{lname}', EMP_BIRTHDATE = '{bd}', EMP_ADDRESS = '{address}', EMP_PHONE = '{phone}' WHERE EMP_ID = {id} RETURNING EMP_ID")
-        
+
+        data = postgres.query(f"UPDATE EMPLOYEE SET EMP_FNAME = '{fname}', EMP_LNAME = '{lname}', EMP_BIRTHDATE = '{bd}', EMP_ADDRESS = '{address}', EMP_PHONE = '{phone}' WHERE EMP_ID = {id} RETURNING EMP_ID")
+
         if data:
             username = self.tbUser.text()
             password = self.tbPasword.text()
             acc_type = self.tbPosition.currentIndex()
             
-            data = postgres.update(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', ACC_TYPE_ID = '{acc_type}' WHERE EMP_ID = {id} RETURNING EMP_ID")
+            data = postgres.query(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', ACC_TYPE_ID = '{acc_type}' WHERE EMP_ID = {id} RETURNING EMP_ID")
             
             if data:
-                msg = QMessageBox(self)
-                msg.setWindowTitle("Message")
-                msg.setText("Staff Infomation Updated!")
-                msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-                msg.setFixedSize(QSize(500, 250))
-                # msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-                msg.setDefaultButton(QMessageBox.StandardButton.Ok)
-                msg.exec()
+                self.popupMessage("Staff info updated!")
         
         self.clearFields()
-        
+
     def removeStaff(self):
         id = self.lblId.text()
-        data = postgres.delete(f"DELETE FROM ACCOUNT WHERE EMP_ID = {id} RETURNING EMP_ID")
+        data = postgres.query(f"UPDATE EMPLOYEE SET EMP_STATUS = 'Removed' WHERE EMP_ID = {id} RETURNING EMP_ID")
         if data:
-            data = postgres.delete(f"DELETE FROM EMPLOYEE WHERE EMP_ID = {id} RETURNING EMP_ID")
-            if data:
-                msg = QMessageBox(self)
-                msg.setWindowTitle("Message")
-                msg.setText("Staff Infomation Removed!")
-                msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-                msg.setFixedSize(QSize(500, 250))
-                # msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-                msg.setDefaultButton(QMessageBox.StandardButton.Ok)
-                msg.exec()
+            self.popupMessage("tenant info updated!")
 
         self.clearFields()
         self.displayTable()

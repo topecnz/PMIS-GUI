@@ -24,7 +24,7 @@ class PostgreSQL():
         
         return data
     
-    def insert(self, query):
+    def query(self, query):
         postgres = self.connection()
         pgcursor = postgres.cursor()
         
@@ -35,24 +35,24 @@ class PostgreSQL():
         
         return data
     
-    def update(self, query):
-        postgres = self.connection()
-        pgcursor = postgres.cursor()
+    # def update(self, query):
+    #     postgres = self.connection()
+    #     pgcursor = postgres.cursor()
         
-        pgcursor.execute(query)
-        data = pgcursor.fetchone()
-        postgres.commit()
-        postgres.close()
+    #     pgcursor.execute(query)
+    #     data = pgcursor.fetchone()
+    #     postgres.commit()
+    #     postgres.close()
         
-        return data
+    #     return data
     
-    def delete(self, query):
-        postgres = self.connection()
-        pgcursor = postgres.cursor()
+    # def delete(self, query):
+    #     postgres = self.connection()
+    #     pgcursor = postgres.cursor()
         
-        pgcursor.execute(query)
-        data = pgcursor.fetchone()
-        postgres.commit()
-        postgres.close()
+    #     pgcursor.execute(query)
+    #     data = pgcursor.fetchone()
+    #     postgres.commit()
+    #     postgres.close()
         
-        return data
+    #     return data
