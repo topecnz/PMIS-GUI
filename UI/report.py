@@ -58,19 +58,16 @@ class Report(QWidget):
         )
         self.btnBack.setCursor(Qt.CursorShape.PointingHandCursor)
         
-        for row in range(15):
-            self.table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-            self.table.setItem(row, 1, QTableWidgetItem("10001"))
-            self.table.setItem(row, 2, QTableWidgetItem("10001"))
-            self.table.setItem(row, 3, QTableWidgetItem("10001"))
-            self.table.setItem(row, 4, QTableWidgetItem("10001"))
-            self.table.setItem(row, 5, QTableWidgetItem("10001"))
+        self.lblRevenue = QLabel(self)
+        self.lblRevenue.setText("")
+        self.lblRevenue.setGeometry(20, 650, 750, 30)
+        self.lblRevenue.setFont(QFont("Inter", 12, QFont.Weight.Bold))
             
-        self.lblFname = QLabel(self)
-        self.lblFname.setText("Report Date")
-        self.lblFname.setGeometry(800, 250, 450, 30)
-        self.lblFname.setFont(QFont("Inter", 12, QFont.Weight.Bold))
-        self.lblFname.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lblReportDate = QLabel(self)
+        self.lblReportDate.setText("Report Date")
+        self.lblReportDate.setGeometry(800, 250, 450, 30)
+        self.lblReportDate.setFont(QFont("Inter", 12, QFont.Weight.Bold))
+        self.lblReportDate.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.lblDateFrom = QLabel(self)
         self.lblDateFrom.setText("Date From")
@@ -230,6 +227,7 @@ class Report(QWidget):
             return
         
         row = 0 # default
+        revenue = 0.00
         self.table.setRowCount(len(data))
         for res in data:
             self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
@@ -240,6 +238,11 @@ class Report(QWidget):
             self.table.setItem(row, 5, QTableWidgetItem(res[5]))
             self.table.setItem(row, 6, QTableWidgetItem(str(datetime.strptime(str(res[6]).split(" ")[0], "%Y-%m-%d").strftime("%Y/%m/%d"))))
             row = row + 1
+            
+            # calculate revenue
+            revenue += res[4]
+        
+        self.lblRevenue.setText(f"Revenue: {revenue}")
 
 # initialize some objects here
 postgres = connection.PostgreSQL()
