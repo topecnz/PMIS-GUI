@@ -68,16 +68,6 @@ class Tenant(QWidget):
                 }
             """
         )
-            
-        # self.lblFname = QLabel(self)
-        # self.lblFname.setText("First name:")
-        # self.lblFname.setGeometry(640, 300, 140, 30)
-        # self.lblFname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        # self.lblFname.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        # self.tbFname = QLineEdit(self)
-        # self.tbFname.setGeometry(800, 300, 450, 30)
-        # self.tbFname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         
         self.lblTenant = QLabel()
         self.lblTenant.setText("")
@@ -154,18 +144,6 @@ class Tenant(QWidget):
         self.tbCat.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         self.tbCat.addItems(self.category)
         self.tbCat.setStyleSheet("background-color: #ffffff;")
-        # self.tbCat.currentIndexChanged.connect(self.category)
-        
-        # self.lblCode = QLabel(self)
-        # self.lblCode.setText("Stall Code:")
-        # self.lblCode.setGeometry(640, 580, 140, 30)
-        # self.lblCode.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        # self.lblCode.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        # self.tbCode = QComboBox(self)
-        # self.tbCode.setGeometry(800, 580, 450, 30)
-        # self.tbCode.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        # self.tbCode.setStyleSheet("background-color: #ffffff;")
         
         self.btnAdd = QPushButton(self)
         self.btnAdd.setText("Add")
@@ -234,7 +212,27 @@ class Tenant(QWidget):
         msg.setDefaultButton(QMessageBox.StandardButton.Ok)
         msg.exec()
     
-    # functionalities        
+    # functionalities
+    
+    def validate(self):
+        fname = self.tbFname.text()
+        lname = self.tbLname.text()
+        bd = self.tbBirth.text()
+        address = self.tbAdd.text()
+        phone = self.tbPhone.text()
+        category = self.tbCat.currentIndex()
+        
+        validate = [
+            fname, lname, bd, address, phone, category
+        ]
+        found = True
+        
+        for v in validate:
+            if not v:
+                found = False
+                break
+            
+        return found 
     
     def search(self):
         search = self.tbSearch.text()
@@ -260,6 +258,11 @@ class Tenant(QWidget):
         address = self.tbAdd.text()
         phone = self.tbPhone.text()
         category = self.tbCat.currentIndex()
+            
+        if not self.validate():
+            self.popupMessage("You must filled all fields!")
+            return
+        
         data = postgres.query(f"INSERT INTO TENANT (TEN_FNAME, TEN_LNAME, TEN_BIRTHDATE, TEN_ADDRESS, TEN_PHONE) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}') RETURNING TEN_ID")
         if data:
             data = postgres.query(f"INSERT INTO STALL (STA_TYPE_ID, TEN_ID) VALUES ({category}, {data[0]}) RETURNING STA_ID;")
@@ -279,7 +282,12 @@ class Tenant(QWidget):
         address = self.tbAdd.text()
         phone = self.tbPhone.text()
         category = self.tbCat.currentIndex()
-        data = postgres.query(f"UPDATE TENANT SET TEN_FNAME = '{fname}', TEN_LNAME = '{lname}', TEN_BIRTHDATE = '{bd}', TEN_ADDRESS = '{address}', TEN_PHONE = '{phone}' WHERE TEN_ID = {id} RETURNING TEN_ID")
+        
+        if not self.validate():
+            self.popupMessage("You must filled all fields!")
+            return
+        
+        data = postgres.query(f"UPDATE TENANT SET TEN_FNAME = '{fname}', TEN_LNAME = '{lname}', TEN_BIRTHDATE = '{bd}', TEN_ADDRESS = '{address}', TEN_PHONE = '{phone}', TEN_UPDATED_AT = CURRENT_TIMESTAMP WHERE TEN_ID = {id} RETURNING TEN_ID")
 
         if data:            
             data = postgres.query(f"UPDATE STALL SET STA_TYPE_ID = {category} WHERE TEN_ID = {id} RETURNING TEN_ID")
@@ -291,7 +299,7 @@ class Tenant(QWidget):
         
     def removeTenant(self):
         id = self.lblId.text()
-        data = postgres.query(f"UPDATE TENANT SET TEN_STATUS = 'Removed' WHERE TEN_ID = {id} RETURNING TEN_ID")
+        data = postgres.query(f"UPDATE TENANT SET TEN_STATUS = 'Removed', TEN_UPDATED_AT = CURRENT_TIMESTAMP WHERE TEN_ID = {id} RETURNING TEN_ID")
         if data:
             self.popupMessage("tenant info removed!")
 

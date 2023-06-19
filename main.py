@@ -120,6 +120,7 @@ class Main(QDialog):
 
     def staff(self):        
         widget.setCurrentWidget(self.wStaff)
+        self.wStaff.staffPos()
         self.wStaff.displayTable()
         self.wStaff.clearFields() # just to clear everything.
         self.wStaff.btnBack.clicked.connect(self.back)

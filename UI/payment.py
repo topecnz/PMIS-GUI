@@ -193,9 +193,20 @@ class Payment(QWidget):
             
     def updatePayment(self):
         id = self.lblPid.text().split('\t')[1]
-        amount = int(self.tbAmount.text())
-        print(amount)
-        data = postgres.query(f"UPDATE PAYMENT SET PAY_AMOUNT_PAID = PAY_AMOUNT_PAID + {amount} WHERE PAY_ID = {id} RETURNING PAY_ID")
+        balance = self.lblBalance.text().split('\t')[1].split('.')[0]
+        amount = self.tbAmount.text()
+        
+        if not amount:
+            self.popupMessage("Please enter amount")
+            return
+        elif int(balance) < int(amount):
+            self.popupMessage(f"You can't pay more than {balance}.")
+            return
+        elif int(amount) <= 0:
+            self.popupMessage(f"You must enter from 1 to {balance}.")
+            return
+        
+        data = postgres.query(f"UPDATE PAYMENT SET PAY_AMOUNT_PAID = PAY_AMOUNT_PAID + {int(amount)} WHERE PAY_ID = {id} RETURNING PAY_ID")
         if data:            
             self.popupMessage("Tenant payment updated!")
             self.displayTable()

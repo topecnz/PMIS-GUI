@@ -1,5 +1,5 @@
-from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize, QDate
-from PyQt6.QtGui import QFont, QIntValidator
+from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize, QDate, QRegularExpression
+from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
 from db import connection
@@ -12,6 +12,7 @@ class Staff(QWidget):
         # store data
         self.widget = widget
         self.cookies = cookies
+        self.position = ['']
         
         self.lblTitle = QLabel(self)
         
@@ -87,6 +88,7 @@ class Staff(QWidget):
         self.tbUser = QLineEdit(self)
         self.tbUser.setGeometry(800, 260, 450, 30)
         self.tbUser.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        self.tbUser.setValidator(QRegularExpressionValidator(QRegularExpression(r"\S+")))
             
         self.lblPasword = QLabel(self)
         self.lblPasword.setText("Password:")
@@ -98,6 +100,7 @@ class Staff(QWidget):
         self.tbPasword.setGeometry(800, 300, 450, 30)
         self.tbPasword.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         self.tbPasword.setEchoMode(QLineEdit.EchoMode.Password)
+        self.tbPasword.setValidator(QRegularExpressionValidator(QRegularExpression(r"\S+")))
             
         self.lblPosition = QLabel(self)
         self.lblPosition.setText("Position:")
@@ -108,8 +111,8 @@ class Staff(QWidget):
         self.tbPosition = QComboBox(self)
         self.tbPosition.setGeometry(800, 340, 450, 30)
         self.tbPosition.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbPosition.addItems(['','Staff', 'Admin'])
         self.tbPosition.setStyleSheet("background-color: #ffffff;")
+        self.tbPosition.setValidator(QRegularExpressionValidator(QRegularExpression(r"\S+")))
         
         self.lblFname = QLabel(self)
         self.lblFname.setText("First name:")
@@ -120,16 +123,7 @@ class Staff(QWidget):
         self.tbFname = QLineEdit(self)
         self.tbFname.setGeometry(800, 420, 450, 30)
         self.tbFname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        
-        # self.lblMname = QLabel(self)
-        # self.lblMname.setText("Middle name:")
-        # self.lblMname.setGeometry(640, 420, 140, 30)
-        # self.lblMname.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-        # self.lblMname.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        # self.tbMname = QLineEdit(self)
-        # self.tbMname.setGeometry(800, 420, 450, 30)
-        # self.tbMname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        self.tbFname.setValidator(QRegularExpressionValidator(QRegularExpression(r"\S+")))
         
         self.lblLname = QLabel(self)
         self.lblLname.setText("Last name:")
@@ -140,6 +134,7 @@ class Staff(QWidget):
         self.tbLname = QLineEdit(self)
         self.tbLname.setGeometry(800, 460, 450, 30)
         self.tbLname.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        self.tbLname.setValidator(QRegularExpressionValidator(QRegularExpression(r"\S+")))
         
         self.lblBirth = QLabel(self)
         self.lblBirth.setText("Birthdate:")
@@ -162,6 +157,7 @@ class Staff(QWidget):
         self.tbAdd = QLineEdit(self)
         self.tbAdd.setGeometry(800, 540, 450, 30)
         self.tbAdd.setFont(QFont("Inter", 16, QFont.Weight.Normal))
+        self.tbAdd.setValidator(QRegularExpressionValidator(QRegularExpression(r"\S+")))
         
         self.lblPhone = QLabel(self)
         self.lblPhone.setText("Phone:")
@@ -240,7 +236,9 @@ class Staff(QWidget):
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg.setDefaultButton(QMessageBox.StandardButton.Ok)
         msg.exec()
-            
+
+    # functionalities
+    
     def search(self):
         search = self.tbSearch.text()
         self.table.clearContents() # clear everything before adding rows
@@ -257,8 +255,28 @@ class Staff(QWidget):
                 row = row + 1
         else:
             self.popupMessage("Entry not found!")
+
+    def validate(self):
+        fname = self.tbFname.text()
+        lname = self.tbLname.text()
+        bd = self.tbBirth.text()
+        address = self.tbAdd.text()
+        phone = self.tbPhone.text()
+        username = self.tbUser.text()
+        password = self.tbPasword.text()
+        acc_type = self.tbPosition.currentIndex()
         
-    # functionalities
+        validate = [
+            fname, lname, bd, address, phone, username, password, acc_type
+        ]
+        found = True
+        
+        for v in validate:
+            if not v:
+                found = False
+                break
+            
+        return found
     
     def addStaff(self):
         fname = self.tbFname.text()
@@ -266,11 +284,16 @@ class Staff(QWidget):
         bd = self.tbBirth.text()
         address = self.tbAdd.text()
         phone = self.tbPhone.text()
+        username = self.tbUser.text()
+        password = self.tbPasword.text()
+        acc_type = self.tbPosition.currentIndex()
+            
+        if not self.validate():
+            self.popupMessage("You must filled all fields!")
+            return
+        
         data = postgres.query(f"INSERT INTO EMPLOYEE (EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}') RETURNING EMP_ID")
         if data:
-            username = self.tbUser.text()
-            password = self.tbPasword.text()
-            acc_type = self.tbPosition.currentIndex()
             if postgres.query(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', ACC_TYPE_ID = '{acc_type}' WHERE EMP_ID = '{data[0]}' RETURNING ACC_ID"):
                 self.popupMessage("Staff info added!")
                 self.displayTable()
@@ -288,8 +311,12 @@ class Staff(QWidget):
         bd = self.tbBirth.text()
         address = self.tbAdd.text()
         phone = self.tbPhone.text()
+        
+        if not self.validate():
+            self.popupMessage("You must filled all fields!")
+            return
 
-        data = postgres.query(f"UPDATE EMPLOYEE SET EMP_FNAME = '{fname}', EMP_LNAME = '{lname}', EMP_BIRTHDATE = '{bd}', EMP_ADDRESS = '{address}', EMP_PHONE = '{phone}' WHERE EMP_ID = {id} RETURNING EMP_ID")
+        data = postgres.query(f"UPDATE EMPLOYEE SET EMP_FNAME = '{fname}', EMP_LNAME = '{lname}', EMP_BIRTHDATE = '{bd}', EMP_ADDRESS = '{address}', EMP_PHONE = '{phone}', EMP_UPDATED_AT = CURRENT_TIMESTAMP WHERE EMP_ID = {id} RETURNING EMP_ID")
 
         if data:
             username = self.tbUser.text()
@@ -305,7 +332,7 @@ class Staff(QWidget):
 
     def removeStaff(self):
         id = self.lblId.text()
-        data = postgres.query(f"UPDATE EMPLOYEE SET EMP_STATUS = 'Removed' WHERE EMP_ID = {id} RETURNING EMP_ID")
+        data = postgres.query(f"UPDATE EMPLOYEE SET EMP_STATUS = 'Removed', EMP_UPDATED_AT = CURRENT_TIMESTAMP WHERE EMP_ID = {id} RETURNING EMP_ID")
         if data:
             self.popupMessage("tenant info updated!")
 
@@ -323,7 +350,9 @@ class Staff(QWidget):
         self.lblId.setText("")
         self.tbUser.clear()
         self.tbPasword.clear()
+        self.staffPos()
         self.tbPosition.setCurrentIndex(-1)
+        self.tbPosition.setDisabled(False)
         self.tbFname.clear()
         self.tbLname.clear()
         self.tbBirth.setDate(QDate())
@@ -350,6 +379,7 @@ class Staff(QWidget):
         if len(item) == 0:
             return
         
+        self.clearFields() # just to be sure
         row = self.table.row(item[0])
         id = self.table.item(row, 0).text()
         res = postgres.select(f"SELECT EMP_ID, ACC_USERNAME, ACC_PASSWORD, ACC_TYPE_ID, EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_ID = '{id}' AND EMP_STATUS != 'Removed' ORDER BY ACC_ID")
@@ -361,6 +391,8 @@ class Staff(QWidget):
         self.lblId.setText(str(data[0]))
         self.tbUser.setText(data[1])
         self.tbPasword.setText(data[2])
+        self.tbPosition.clear()
+        self.tbPosition.addItems(self.position)
         self.tbPosition.setCurrentIndex(int(data[3]))
         self.tbFname.setText(data[4])
         self.tbLname.setText(data[5])
@@ -368,11 +400,34 @@ class Staff(QWidget):
         self.tbAdd.setText(data[7])
         self.tbPhone.setText(data[8])
         
+        # Disable position field section if the user is admin.
+        # The owner can change to their employees.
+        if self.cookies.data['type'] == 2:
+            self.tbPosition.setDisabled(True)
+        
         # update buttons
         self.btnAdd.setVisible(False)
         self.btnUpdate.setVisible(True)
         self.btnRemove.setVisible(True)
         self.btnClear.setVisible(True)
+    
+    # just to initialize the position
+    def staffPos(self):
+        self.position.clear()
+        self.tbPosition.clear()
+        data = postgres.select("SELECT ACC_TYPE_ID, ACC_TYPE_NAME FROM ACCOUNT_TYPE WHERE ACC_TYPE_ID != 3 ORDER BY ACC_TYPE_ID;")
+        for r in data:
+            self.position.append(r[1])
+
+        self.position.insert(0, '')
+        
+        # if self.cookies.data["type"] == 2:
+        #     self.tbPosition.addItems(['', 'Staff'])
+        # else:
+        #     self.tbPosition.addItems(self.position)
+        lists = self.position if self.cookies.data["type"] == 3 else ['', 'Staff']
+        self.tbPosition.addItems(lists)
+        
 
 # initialize some objects here
 postgres = connection.PostgreSQL()
