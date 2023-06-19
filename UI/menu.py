@@ -102,11 +102,11 @@ class Menu(QWidget):
                 background-color: #ffffff;
             """
         )
-        self.btnStaff.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btnStall.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnStaff = QPushButton(self)
         self.btnStaff.setText("Staff Information")
-        self.btnStaff.setGeometry(660, 520, 600, 60)
+        self.btnStaff.setGeometry(660, 600, 600, 60)
         self.btnStaff.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnStaff.setStyleSheet(
             """

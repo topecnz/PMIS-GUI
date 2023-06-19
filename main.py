@@ -5,7 +5,7 @@ from PyQt6.QtGui import QFont, QScreen, QGuiApplication
 from PyQt6.QtWidgets import *
 
 # import UI
-from UI import login, menu, tenant, inventory, payment, report, staff
+from UI import login, menu, tenant, inventory, payment, report, stall, staff
 
 #database
 from db import connection
@@ -25,6 +25,7 @@ class Main(QDialog):
         self.wInventory = inventory.Inventory(widget, cookies)
         self.wPayment = payment.Payment(widget, cookies)
         self.wReport = report.Report(widget, cookies)
+        self.wStall = stall.Stall(widget, cookies)
         self.wStaff = staff.Staff(widget, cookies)
         
         # Add objects to widget
@@ -34,6 +35,7 @@ class Main(QDialog):
         widget.addWidget(self.wInventory)
         widget.addWidget(self.wPayment)
         widget.addWidget(self.wReport)
+        widget.addWidget(self.wStall)
         widget.addWidget(self.wStaff)
         
         self.login() # default
@@ -80,13 +82,14 @@ class Main(QDialog):
         self.wMenu.btnInv.clicked.connect(self.inventory)
         self.wMenu.btnPayment.clicked.connect(self.payment)
         self.wMenu.btnReport.clicked.connect(self.report)
+        self.wMenu.btnStall.clicked.connect(self.stall)
         self.wMenu.btnStaff.clicked.connect(self.staff)
         
+        self.wMenu.btnStaff.hide()
+
         # Check if the user is not staff, display Staff button.
         if cookies.data['type'] != 1:
             self.wMenu.btnStaff.show()
-        else:
-            self.wMenu.btnStaff.hide()
 
     # for back button listener only
     
@@ -117,6 +120,12 @@ class Main(QDialog):
         widget.setCurrentWidget(self.wReport)
         self.wReport.displayTable()
         self.wReport.btnBack.clicked.connect(self.back)
+
+    def stall(self):        
+        widget.setCurrentWidget(self.wStall)
+        self.wStall.displayTable()
+        self.wStall.clearFields() # just to clear everything.
+        self.wStall.btnBack.clicked.connect(self.back)
 
     def staff(self):        
         widget.setCurrentWidget(self.wStaff)
