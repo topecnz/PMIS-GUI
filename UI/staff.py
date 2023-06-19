@@ -50,7 +50,6 @@ class Staff(QWidget):
         self.table = QTableWidget(self)
         self.table.setGeometry(20, 290, 600, 400)
         self.table.setColumnCount(5)
-        self.table.setRowCount(15)
         
         self.table.setHorizontalHeaderLabels(['Account ID', 'Lastname', 'Firstname', 'Phone', 'Date Added'])
         self.table.verticalHeader().setVisible(False)
@@ -247,6 +246,7 @@ class Staff(QWidget):
         self.table.clearContents() # clear everything before adding rows
         data = postgres.select(f"SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE LOWER(CONCAT(ACC_ID, ' ', EMP_FNAME, ' ', EMP_LNAME)) LIKE LOWER('%{search}%') AND ACC_TYPE_ID != 3 ORDER BY ACC_ID")
         if data:
+            self.table.setRowCount(len(data))
             row = 0 # default
             for res in data:
                 self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
@@ -332,8 +332,9 @@ class Staff(QWidget):
     
     def displayTable(self):
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select("SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_TYPE_ID != 3 AND ACC_STATUS != 'Removed' ORDER BY ACC_ID;")
-            
+        data = postgres.select("SELECT ACC_ID, EMP_LNAME, EMP_FNAME, EMP_PHONE, EMP_CREATED_AT FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_TYPE_ID != 3 AND EMP_STATUS != 'Removed' ORDER BY ACC_ID;")
+        
+        self.table.setRowCount(len(data))
         row = 0 # default
         for res in data:
             self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
@@ -351,7 +352,7 @@ class Staff(QWidget):
         
         row = self.table.row(item[0])
         id = self.table.item(row, 0).text()
-        res = postgres.select(f"SELECT EMP_ID, ACC_USERNAME, ACC_PASSWORD, ACC_TYPE_ID, EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_ID = '{id}' AND ACC_STATUS != 'Removed' ORDER BY ACC_ID")
+        res = postgres.select(f"SELECT EMP_ID, ACC_USERNAME, ACC_PASSWORD, ACC_TYPE_ID, EMP_FNAME, EMP_LNAME, EMP_BIRTHDATE, EMP_ADDRESS, EMP_PHONE FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_ID = '{id}' AND EMP_STATUS != 'Removed' ORDER BY ACC_ID")
         
         # fetch data from account id
         data = res[0]

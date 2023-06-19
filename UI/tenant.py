@@ -241,6 +241,7 @@ class Tenant(QWidget):
         self.table.clearContents() # clear everything before adding rows
         data = postgres.select(f"SELECT TEN_ID, TEN_LNAME, TEN_FNAME, TEN_PHONE, TEN_CREATED_AT FROM TENANT WHERE LOWER(CONCAT(TEN_ID, ' ', TEN_FNAME, ' ', TEN_LNAME)) LIKE LOWER('%{search}%') ORDER BY TEN_ID")
         if data:
+            self.table.setRowCount(len(data))
             row = 0 # default
             for res in data:
                 self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
@@ -315,7 +316,8 @@ class Tenant(QWidget):
     def displayTable(self):
         self.table.clearContents() # clear everything before adding rows
         data = postgres.select("SELECT TEN_ID, TEN_LNAME, TEN_FNAME, TEN_PHONE, TEN_CREATED_AT FROM TENANT WHERE TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
-            
+        
+        self.table.setRowCount(len(data))
         row = 0 # default
         for res in data:
             self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))

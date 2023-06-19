@@ -115,6 +115,7 @@ class Main(QDialog):
 
     def report(self):        
         widget.setCurrentWidget(self.wReport)
+        self.wReport.displayTable()
         self.wReport.btnBack.clicked.connect(self.back)
 
     def staff(self):        

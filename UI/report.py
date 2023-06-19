@@ -1,6 +1,9 @@
-from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize
+from PyQt6.QtCore import Qt, QTimer, QDateTime, QSize, QDate
 from PyQt6.QtGui import QFont, QIntValidator
 from PyQt6.QtWidgets import *
+
+from db import connection
+from datetime import datetime
 
 class Report(QWidget):
     def __init__(self, widget, cookies):
@@ -37,10 +40,9 @@ class Report(QWidget):
         
         self.table = QTableWidget(self)
         self.table.setGeometry(20, 250, 750, 400)
-        self.table.setColumnCount(5)
-        self.table.setRowCount(15)
+        self.table.setColumnCount(7)
         
-        self.table.setHorizontalHeaderLabels(['Tenant ID', 'Lastname', 'Firstname', 'Phone', 'Date Added'])
+        self.table.setHorizontalHeaderLabels(['Payment ID', 'Tenant ID', 'Name', 'Stall Type', 'Balance Paid', 'Status', 'Date Dute'])
         self.table.verticalHeader().setVisible(False)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -62,6 +64,7 @@ class Report(QWidget):
             self.table.setItem(row, 2, QTableWidgetItem("10001"))
             self.table.setItem(row, 3, QTableWidgetItem("10001"))
             self.table.setItem(row, 4, QTableWidgetItem("10001"))
+            self.table.setItem(row, 5, QTableWidgetItem("10001"))
             
         self.lblFname = QLabel(self)
         self.lblFname.setText("Report Date")
@@ -80,6 +83,8 @@ class Report(QWidget):
         self.tbDateFrom.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         self.tbDateFrom.setCalendarPopup(True)
         self.tbDateFrom.setDisplayFormat("yyyy/MM/dd")
+        self.tbDateFrom.setDate(QDate.currentDate())
+        self.tbDateFrom.setMaximumDate(QDate.currentDate())
         
         self.lblDateFrom = QLabel(self)
         self.lblDateFrom.setText("Date To")
@@ -92,6 +97,8 @@ class Report(QWidget):
         self.tbDateTo.setFont(QFont("Inter", 16, QFont.Weight.Normal))
         self.tbDateTo.setCalendarPopup(True)
         self.tbDateTo.setDisplayFormat("yyyy/MM/dd")
+        self.tbDateTo.setDate(QDate.currentDate())
+        self.tbDateTo.setMaximumDate(QDate.currentDate())
         
         self.btnView = QPushButton(self)
         self.btnView.setText("View")
@@ -147,14 +154,92 @@ class Report(QWidget):
                 background-color: #ffffff;
             """
         )
+        
+        #Listeners
+        
+        self.btnView.clicked.connect(self.view)
+        self.btnView7D.clicked.connect(self.view7D)
+        self.btnView30D.clicked.connect(self.view30D)
+        self.btnView90D.clicked.connect(self.view90D)
+        self.btnView365D.clicked.connect(self.view365D)
             
-    def search(self):
+    def popupMessage(self, message):
         msg = QMessageBox(self)
         msg.setWindowTitle("Message")
-        msg.setText("Hello!")
+        msg.setText(message)
         msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         msg.setFixedSize(QSize(500, 250))
         # msg.setIcon(QMessageBox.Icon.Critical)
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg.setDefaultButton(QMessageBox.StandardButton.Ok)
         msg.exec()
+        
+    def view(self):
+        self.table.clearContents()
+        
+        dateFrom = self.tbDateFrom.text()
+        dateTo = self.tbDateTo.text()
+        
+        data = postgres.select(f"SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN INVOICE USING (INV_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE CAST(PAY_UPDATED_AT AS DATE) BETWEEN '{dateFrom}' AND '{dateTo}';")
+        
+        if data:
+            self.displayTable(data)
+        else:
+            self.popupMessage("Records are empty!")
+        
+    def view7D(self):
+        self.table.clearContents()
+        data = postgres.select("SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN INVOICE USING (INV_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_UPDATED_AT BETWEEN CURRENT_TIMESTAMP - INTERVAL '7 DAY' AND CURRENT_TIMESTAMP;")
+        
+        if data:
+            self.displayTable(data)
+        else:
+            self.popupMessage("Records are empty!")
+
+    def view30D(self):
+        self.table.clearContents()
+        data = postgres.select("SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN INVOICE USING (INV_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_UPDATED_AT BETWEEN CURRENT_TIMESTAMP - INTERVAL '30 DAY' AND CURRENT_TIMESTAMP;")
+        
+        if data:
+            self.displayTable(data)
+        else:
+            self.popupMessage("Records are empty!")
+
+    def view90D(self):
+        self.table.clearContents()
+        data = postgres.select("SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN INVOICE USING (INV_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_UPDATED_AT BETWEEN CURRENT_TIMESTAMP - INTERVAL '90 DAY' AND CURRENT_TIMESTAMP;")
+        
+        if data:
+            self.displayTable(data)
+        else:
+            self.popupMessage("Records are empty!")
+
+    def view365D(self):
+        self.table.clearContents()
+        data = postgres.select("SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN INVOICE USING (INV_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_UPDATED_AT BETWEEN CURRENT_TIMESTAMP - INTERVAL '365 DAY' AND CURRENT_TIMESTAMP;")
+        
+        if data:
+            self.displayTable(data)
+        else:
+            self.popupMessage("Records are empty!")
+
+        
+    def displayTable(self, data=None):
+        if not data:
+            self.view7D()
+            return
+        
+        row = 0 # default
+        self.table.setRowCount(len(data))
+        for res in data:
+            self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
+            self.table.setItem(row, 1, QTableWidgetItem(str(res[1])))
+            self.table.setItem(row, 2, QTableWidgetItem(res[2]))
+            self.table.setItem(row, 3, QTableWidgetItem(res[3]))
+            self.table.setItem(row, 4, QTableWidgetItem(str(res[4])))
+            self.table.setItem(row, 5, QTableWidgetItem(res[5]))
+            self.table.setItem(row, 6, QTableWidgetItem(str(datetime.strptime(str(res[6]).split(" ")[0], "%Y-%m-%d").strftime("%Y/%m/%d"))))
+            row = row + 1
+
+# initialize some objects here
+postgres = connection.PostgreSQL()
