@@ -38,6 +38,7 @@ class Staff(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnBack.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.lblSearch = QLabel(self)
         self.lblSearch.setText("Search:")
@@ -180,6 +181,7 @@ class Staff(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnAdd.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.btnUpdate = QPushButton(self)
         self.btnUpdate.setText("Update")
@@ -192,6 +194,7 @@ class Staff(QWidget):
             """
         )
         self.btnUpdate.setVisible(False)
+        self.btnUpdate.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnRemove = QPushButton(self)
         self.btnRemove.setText("Remove")
@@ -204,6 +207,7 @@ class Staff(QWidget):
             """
         )
         self.btnRemove.setVisible(False)
+        self.btnRemove.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnClear = QPushButton(self)
         self.btnClear.setText("Clear")
@@ -216,6 +220,7 @@ class Staff(QWidget):
             """
         )
         self.btnClear.setVisible(False)
+        self.btnClear.setCursor(Qt.CursorShape.PointingHandCursor)
         
         #Listeners
         

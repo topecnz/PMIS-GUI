@@ -111,6 +111,7 @@ class Inventory(QWidget):
             """
         )
         self.btnUpdate.setVisible(False)
+        self.btnUpdate.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnClear = QPushButton(self)
         self.btnClear.setText("Clear")
@@ -123,6 +124,7 @@ class Inventory(QWidget):
             """
         )
         self.btnClear.setVisible(False)
+        self.btnClear.setCursor(Qt.CursorShape.PointingHandCursor)
         
         #Listeners
         

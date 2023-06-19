@@ -155,6 +155,7 @@ class Tenant(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnAdd.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.btnUpdate = QPushButton(self)
         self.btnUpdate.setText("Update")
@@ -167,6 +168,7 @@ class Tenant(QWidget):
             """
         )
         self.btnUpdate.setVisible(False)
+        self.btnUpdate.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnRemove = QPushButton(self)
         self.btnRemove.setText("Remove")
@@ -179,6 +181,7 @@ class Tenant(QWidget):
             """
         )
         self.btnRemove.setVisible(False)
+        self.btnRemove.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnClear = QPushButton(self)
         self.btnClear.setText("Clear")
@@ -191,6 +194,7 @@ class Tenant(QWidget):
             """
         )
         self.btnClear.setVisible(False)
+        self.btnClear.setCursor(Qt.CursorShape.PointingHandCursor)
         
         #Listeners
         

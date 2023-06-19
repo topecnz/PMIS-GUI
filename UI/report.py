@@ -107,6 +107,7 @@ class Report(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnView.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnView7D = QPushButton(self)
         self.btnView7D.setText("View 7D")
@@ -118,6 +119,7 @@ class Report(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnView7D.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnView30D = QPushButton(self)
         self.btnView30D.setText("View 30D")
@@ -129,7 +131,8 @@ class Report(QWidget):
                 background-color: #ffffff;
             """
         )
-        
+        self.btnView30D.setCursor(Qt.CursorShape.PointingHandCursor)
+
         self.btnView90D = QPushButton(self)
         self.btnView90D.setText("View 90D")
         self.btnView90D.setGeometry(850, 530, 350, 30)
@@ -140,7 +143,8 @@ class Report(QWidget):
                 background-color: #ffffff;
             """
         )
-        
+        self.btnView90D.setCursor(Qt.CursorShape.PointingHandCursor)
+
         self.btnView365D = QPushButton(self)
         self.btnView365D.setText("View 365D")
         self.btnView365D.setGeometry(850, 570, 350, 30)
@@ -151,7 +155,8 @@ class Report(QWidget):
                 background-color: #ffffff;
             """
         )
-        
+        self.btnView365D.setCursor(Qt.CursorShape.PointingHandCursor)
+
         #Listeners
         
         self.btnView.clicked.connect(self.view)

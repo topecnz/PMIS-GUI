@@ -36,6 +36,7 @@ class Payment(QWidget):
                 background-color: #ffffff;
             """
         )
+        self.btnBack.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.lblSearch = QLabel(self)
         self.lblSearch.setText("Search:")
@@ -119,17 +120,6 @@ class Payment(QWidget):
         self.tbAmount.setValidator(QIntValidator().setBottom(0))
         self.tbAmount.setVisible(False)
         
-        # self.lblMethod = QLabel(self)
-        # self.lblMethod.setText("Method:")
-        # self.lblMethod.setGeometry(640, 580, 140, 30)
-        # self.lblMethod.setFont(QFont("Inter", 14, QFont.Weight.Bold))
-        # self.lblMethod.setAlignment(Qt.AlignmentFlag.AlignRight)
-
-        # self.tbMethod = QComboBox(self)
-        # self.tbMethod.setGeometry(800, 580, 450, 30)
-        # self.tbMethod.setFont(QFont("Inter", 14, QFont.Weight.Normal))
-        # self.tbMethod.setStyleSheet("background-color: #ffffff;")
-        
         self.btnUpdate = QPushButton(self)
         self.btnUpdate.setText("Pay")
         self.btnUpdate.setGeometry(660, 640, 180, 40)
@@ -141,6 +131,7 @@ class Payment(QWidget):
             """
         )
         self.btnUpdate.setVisible(False)
+        self.btnUpdate.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.btnClear = QPushButton(self)
         self.btnClear.setText("Clear")
@@ -153,6 +144,7 @@ class Payment(QWidget):
             """
         )
         self.btnClear.setVisible(False)
+        self.btnClear.setCursor(Qt.CursorShape.PointingHandCursor)
         
         #Listeners
         

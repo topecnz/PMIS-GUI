@@ -46,7 +46,7 @@ class Menu(QWidget):
         
         self.btnTenant = QPushButton(self)
         self.btnTenant.setText("Tenant Inforamtion")
-        self.btnTenant.setGeometry(660, 240, 600, 60)
+        self.btnTenant.setGeometry(660, 200, 600, 60)
         self.btnTenant.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnTenant.setStyleSheet(
             """
@@ -58,7 +58,7 @@ class Menu(QWidget):
         
         self.btnInv = QPushButton(self)
         self.btnInv.setText("Market Inventories")
-        self.btnInv.setGeometry(660, 320, 600, 60)
+        self.btnInv.setGeometry(660, 280, 600, 60)
         self.btnInv.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnInv.setStyleSheet(
             """
@@ -70,7 +70,7 @@ class Menu(QWidget):
         
         self.btnPayment = QPushButton(self)
         self.btnPayment.setText("Payment")
-        self.btnPayment.setGeometry(660, 400, 600, 60)
+        self.btnPayment.setGeometry(660, 360, 600, 60)
         self.btnPayment.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnPayment.setStyleSheet(
             """
@@ -82,7 +82,7 @@ class Menu(QWidget):
         
         self.btnReport = QPushButton(self)
         self.btnReport.setText("Revenue Report")
-        self.btnReport.setGeometry(660, 480, 600, 60)
+        self.btnReport.setGeometry(660, 440, 600, 60)
         self.btnReport.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnReport.setStyleSheet(
             """
@@ -92,9 +92,21 @@ class Menu(QWidget):
         )
         self.btnReport.setCursor(Qt.CursorShape.PointingHandCursor)
         
+        self.btnStall = QPushButton(self)
+        self.btnStall.setText("Stall Information")
+        self.btnStall.setGeometry(660, 520, 600, 60)
+        self.btnStall.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+        self.btnStall.setStyleSheet(
+            """
+                border-radius: 10px;
+                background-color: #ffffff;
+            """
+        )
+        self.btnStaff.setCursor(Qt.CursorShape.PointingHandCursor)
+        
         self.btnStaff = QPushButton(self)
-        self.btnStaff.setText("Staff")
-        self.btnStaff.setGeometry(660, 560, 600, 60)
+        self.btnStaff.setText("Staff Information")
+        self.btnStaff.setGeometry(660, 520, 600, 60)
         self.btnStaff.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.btnStaff.setStyleSheet(
             """
