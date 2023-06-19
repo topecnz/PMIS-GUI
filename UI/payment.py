@@ -184,7 +184,8 @@ class Payment(QWidget):
             self.popupMessage("Entry not found!")
             
     def updatePayment(self):
-        id = self.lblPid.text().split('\t')[1]
+        id = self.lblId.text().split('\t')[1]
+        Pid = self.lblPid.text().split('\t')[1]
         balance = self.lblBalance.text().split('\t')[1].split('.')[0]
         amount = self.tbAmount.text()
         
@@ -198,10 +199,12 @@ class Payment(QWidget):
             self.popupMessage(f"You must enter from 1 to {balance}.")
             return
         
-        data = postgres.query(f"UPDATE PAYMENT SET PAY_AMOUNT_PAID = PAY_AMOUNT_PAID + {int(amount)} WHERE PAY_ID = {id} RETURNING PAY_ID")
+        data = postgres.query(f"UPDATE PAYMENT SET PAY_AMOUNT_PAID = PAY_AMOUNT_PAID + {amount} WHERE PAY_ID = {Pid} RETURNING PAY_ID")
         if data:            
-            self.popupMessage("Tenant payment updated!")
-            self.displayTable()
+            data = postgres.query(f"INSERT INTO INVOICE (INV_AMOUNT, TEN_ID, EMP_ID, PAY_ID) VALUES ({amount}, {id}, {self.cookies.data['id']}, {Pid}) RETURNING INV_ID")
+            if data:
+                self.popupMessage("Tenant payment updated!")
+                self.displayTable()
 
         self.clearFields()
         
@@ -245,7 +248,7 @@ class Payment(QWidget):
         
         row = self.table.row(item[0])
         id = self.table.item(row, 0).text()
-        res = postgres.select(f"SELECT TEN_ID, PAY_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_STATUS, PAY_AMOUNT, PAY_DUE_DATE, PAY_AMOUNT - PAY_AMOUNT_PAID AS BALANCE FROM PAYMENT INNER JOIN INVOICE USING (INV_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_ID = {id};")
+        res = postgres.select(f"SELECT TEN_ID, PAY_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_STATUS, PAY_AMOUNT, PAY_DUE_DATE, PAY_AMOUNT - PAY_AMOUNT_PAID AS BALANCE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_ID = {id};")
         
         # fetch data from tenant id
         data = res[0]

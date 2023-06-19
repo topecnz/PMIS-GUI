@@ -42,7 +42,7 @@ class Report(QWidget):
         self.table.setGeometry(20, 250, 750, 400)
         self.table.setColumnCount(7)
         
-        self.table.setHorizontalHeaderLabels(['Payment ID', 'Tenant ID', 'Name', 'Stall Type', 'Balance Paid', 'Status', 'Date Dute'])
+        self.table.setHorizontalHeaderLabels(['Invoice ID', 'Tenant ID', 'Tenant Name', 'Stall Type', 'Amount', 'Payment ID', 'Date Dute'])
         self.table.verticalHeader().setVisible(False)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -182,7 +182,11 @@ class Report(QWidget):
         dateFrom = self.tbDateFrom.text()
         dateTo = self.tbDateTo.text()
         
-        data = postgres.select(f"SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE CAST(PAY_UPDATED_AT AS DATE) BETWEEN '{dateFrom}' AND '{dateTo}';")
+        if (datetime.strptime(dateTo, '%Y/%m/%d') - datetime.strptime(dateFrom, '%Y/%m/%d')).days < 0:
+            self.popupMessage("You can't view reports that the Date To is lesser than Date From")
+            return
+        
+        data = postgres.select(f"SELECT INV_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, INV_AMOUNT, PAY_ID, INV_DATE FROM INVOICE INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE INV_DATE BETWEEN '{dateFrom}' AND '{dateTo}' ORDER BY INV_ID;")
         
         if data:
             self.displayTable(data)
@@ -191,7 +195,7 @@ class Report(QWidget):
         
     def view7D(self):
         self.table.clearContents()
-        data = postgres.select("SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_AMOUNT_PAID > 0 AND PAY_UPDATED_AT BETWEEN CURRENT_TIMESTAMP - INTERVAL '7 DAY' AND CURRENT_TIMESTAMP;")
+        data = postgres.select("SELECT INV_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, INV_AMOUNT, PAY_ID, INV_DATE FROM INVOICE INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE INV_DATE BETWEEN CURRENT_DATE - INTERVAL '7 DAY' AND CURRENT_DATE ORDER BY INV_ID;")
         
         if data:
             self.displayTable(data)
@@ -200,7 +204,7 @@ class Report(QWidget):
 
     def view30D(self):
         self.table.clearContents()
-        data = postgres.select("SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_AMOUNT_PAID > 0 AND PAY_UPDATED_AT BETWEEN CURRENT_TIMESTAMP - INTERVAL '30 DAY' AND CURRENT_TIMESTAMP;")
+        data = postgres.select("SELECT INV_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, INV_AMOUNT, PAY_ID, INV_DATE FROM INVOICE INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE INV_DATE BETWEEN CURRENT_DATE - INTERVAL '30 DAY' AND CURRENT_DATE ORDER BY INV_ID;")
         
         if data:
             self.displayTable(data)
@@ -209,7 +213,7 @@ class Report(QWidget):
 
     def view90D(self):
         self.table.clearContents()
-        data = postgres.select("SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_AMOUNT_PAID > 0 AND PAY_UPDATED_AT BETWEEN CURRENT_TIMESTAMP - INTERVAL '90 DAY' AND CURRENT_TIMESTAMP;")
+        data = postgres.select("SELECT INV_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, INV_AMOUNT, PAY_ID, INV_DATE FROM INVOICE INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE INV_DATE BETWEEN CURRENT_DATE - INTERVAL '90 DAY' AND CURRENT_DATE ORDER BY INV_ID;")
         
         if data:
             self.displayTable(data)
@@ -218,7 +222,7 @@ class Report(QWidget):
 
     def view365D(self):
         self.table.clearContents()
-        data = postgres.select("SELECT PAY_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, PAY_AMOUNT_PAID, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE PAY_AMOUNT_PAID > 0 AND PAY_UPDATED_AT BETWEEN CURRENT_TIMESTAMP - INTERVAL '365 DAY' AND CURRENT_TIMESTAMP;")
+        data = postgres.select("SELECT INV_ID, TEN_ID, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, STA_TYPE_NAME, INV_AMOUNT, PAY_ID, INV_DATE FROM INVOICE INNER JOIN TENANT USING (TEN_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE INV_DATE BETWEEN CURRENT_DATE - INTERVAL '365 DAY' AND CURRENT_DATE ORDER BY INV_ID;")
         
         if data:
             self.displayTable(data)
@@ -240,7 +244,7 @@ class Report(QWidget):
             self.table.setItem(row, 2, QTableWidgetItem(res[2]))
             self.table.setItem(row, 3, QTableWidgetItem(res[3]))
             self.table.setItem(row, 4, QTableWidgetItem(str(res[4])))
-            self.table.setItem(row, 5, QTableWidgetItem(res[5]))
+            self.table.setItem(row, 5, QTableWidgetItem(str(res[5])))
             self.table.setItem(row, 6, QTableWidgetItem(str(datetime.strptime(str(res[6]).split(" ")[0], "%Y-%m-%d").strftime("%Y/%m/%d"))))
             row = row + 1
             
