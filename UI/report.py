@@ -227,7 +227,7 @@ class Report(QWidget):
             return
         
         row = 0 # default
-        revenue = 0.00
+        revenue = 0
         self.table.setRowCount(len(data))
         for res in data:
             self.table.setItem(row, 0, QTableWidgetItem(str(res[0])))
