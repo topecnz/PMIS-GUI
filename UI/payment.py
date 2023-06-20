@@ -167,7 +167,7 @@ class Payment(QWidget):
     def search(self):
         search = self.tbSearch.text()
         self.table.clearContents()
-        data = postgres.select(f"SELECT PAY_ID, CONCAT(PER_FNAME, ' ', PER_LNAME) AS PER_NAME, STA_TYPE_NAME, PAY_AMOUNT - PAY_AMOUNT_PAID AS BALANCE, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN PERSONAL USING (PER_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_STATUS != 'Removed' AND (PAY_DUE_DATE >= CURRENT_DATE OR PAY_STATUS = 'Overdue') AND LOWER(CONCAT(PAY_ID,' ', PER_FNAME, ' ', PER_LNAME, ' ', STA_TYPE_NAME)) LIKE LOWER('%{search}%') AND PAY_STATUS != 'Paid' ORDER BY PAY_ID;")
+        data = postgres.select(f"SELECT PAY_ID, CONCAT(PER_FNAME, ' ', PER_LNAME) AS PER_NAME, STA_TYPE_NAME, PAY_AMOUNT - PAY_AMOUNT_PAID AS BALANCE, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN PERSONAL USING (PER_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_STATUS != 'Removed' AND LOWER(CONCAT(PAY_ID,' ', PER_FNAME, ' ', PER_LNAME, ' ', STA_TYPE_NAME)) LIKE LOWER('%{search}%') AND PAY_STATUS != 'Paid' ORDER BY PAY_ID;")
 
         if data:
             self.table.setRowCount(len(data))
@@ -226,7 +226,7 @@ class Payment(QWidget):
         
     def displayTable(self):
         self.table.clearContents()
-        data = postgres.select("SELECT PAY_ID, CONCAT(PER_FNAME, ' ', PER_LNAME) AS PER_NAME, STA_TYPE_NAME, PAY_AMOUNT - PAY_AMOUNT_PAID AS BALANCE, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN PERSONAL USING (PER_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_STATUS != 'Removed' AND (PAY_DUE_DATE >= CURRENT_DATE OR PAY_STATUS = 'Overdue') AND PAY_STATUS != 'Paid' ORDER BY PAY_ID;")
+        data = postgres.select("SELECT PAY_ID, CONCAT(PER_FNAME, ' ', PER_LNAME) AS PER_NAME, STA_TYPE_NAME, PAY_AMOUNT - PAY_AMOUNT_PAID AS BALANCE, PAY_STATUS, PAY_DUE_DATE FROM PAYMENT INNER JOIN STALL USING (STA_ID) INNER JOIN TENANT USING (TEN_ID) INNER JOIN PERSONAL USING (PER_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_STATUS != 'Removed' AND PAY_STATUS != 'Paid' ORDER BY PAY_ID;")
         
         self.table.setRowCount(len(data))
         row = 0 # default
@@ -268,6 +268,11 @@ class Payment(QWidget):
             self.btnUpdate.setVisible(True)
             
         self.btnClear.setVisible(True)
+        
+    def updatePaymentData(self):
+        data = postgres.query("UPDATE PAYMENT SET PAY_STATUS = CASE WHEN PAY_DUE_DATE < CURRENT_DATE THEN 'Overdue' ELSE PAY_STATUS END;")
+        if data:
+            pass
         
         
 # initialize some objects here

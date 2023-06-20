@@ -114,6 +114,7 @@ class Main(QDialog):
         widget.setCurrentWidget(self.wPayment)
         self.wPayment.displayTable()
         self.wPayment.clearFields()
+        self.wPayment.updatePaymentData() # to update tables for date due.
         self.wPayment.btnBack.clicked.connect(self.back)
 
     def report(self):        
