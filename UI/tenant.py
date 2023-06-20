@@ -69,15 +69,15 @@ class Tenant(QWidget):
             """
         )
         
-        self.lblTenant = QLabel()
+        self.lblTenant = QLabel(self)
         self.lblTenant.setText("")
         self.lblTenant.setGeometry(640, 300, 140, 30)
         self.lblTenant.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         self.lblTenant.setAlignment(Qt.AlignmentFlag.AlignRight)
         
-        self.lblId = QLabel()
+        self.lblId = QLabel(self)
         self.lblId.setText("")
-        self.lblId.setGeometry(800, 300, 140, 30)
+        self.lblId.setGeometry(800, 295, 450, 30)
         self.lblId.setFont(QFont("Inter", 16, QFont.Weight.Bold))
         
         self.lblFname = QLabel(self)
@@ -224,12 +224,13 @@ class Tenant(QWidget):
         bd = self.tbBirth.text()
         address = self.tbAdd.text()
         phone = self.tbPhone.text()
-        category = self.tbCat.currentIndex()
+        category = self.tbCat.currentText().split(" ")[0]
         
         validate = [
             fname, lname, bd, address, phone, category
         ]
         found = True
+        print(validate)
         
         for v in validate:
             if not v:
@@ -241,7 +242,7 @@ class Tenant(QWidget):
     def search(self):
         search = self.tbSearch.text()
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select(f"SELECT TEN_ID, TEN_LNAME, TEN_FNAME, TEN_PHONE, TEN_CREATED_AT FROM TENANT WHERE TEN_STATUS != 'Removed' AND LOWER(CONCAT(TEN_ID, ' ', TEN_FNAME, ' ', TEN_LNAME)) LIKE LOWER('%{search}%') ORDER BY TEN_ID")
+        data = postgres.select(f"SELECT TEN_ID, PER_LNAME, PER_FNAME, PER_PHONE, PER_CREATED_AT FROM TENANT INNER JOIN PERSONAL (PER_ID) WHERE TEN_STATUS != 'Removed' AND LOWER(CONCAT(TEN_ID, ' ', PER_FNAME, ' ', PER_LNAME)) LIKE LOWER('%{search}%') ORDER BY TEN_ID")
         if data:
             self.table.setRowCount(len(data))
             row = 0 # default
@@ -267,19 +268,25 @@ class Tenant(QWidget):
             self.popupMessage("You must filled all fields!")
             return
         
-        data = postgres.query(f"INSERT INTO TENANT (TEN_FNAME, TEN_LNAME, TEN_BIRTHDATE, TEN_ADDRESS, TEN_PHONE) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}') RETURNING TEN_ID")
+        data = postgres.query(f"INSERT INTO PERSONAL (PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE, PER_TYPE_ID) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}', 2) RETURNING PER_ID")
         if data:
-            data = postgres.query(f"INSERT INTO STALL (STA_TYPE_ID, TEN_ID) VALUES ({category}, {data[0]}) RETURNING STA_ID;")
+            data = postgres.query(f"INSERT INTO TENANT (PER_ID) VALUES ({data[0]}) RETURNING TEN_ID")
             if data:
-                self.popupMessage("Tenant info added!")
-                self.displayTable()
+                data = postgres.query(f"INSERT INTO STALL (STA_TYPE_ID, TEN_ID) VALUES ({category}, {data[0]}) RETURNING STA_ID;")
+                if data:
+                    self.popupMessage("Tenant info added!")
+                    self.displayTable()
+                else:
+                    self.popupMessage("Something went wrong!")
+            else:
+                self.popupMessage("Something went wrong!")
         else:
             self.popupMessage("Something went wrong!")
             
         self.clearFields()
         
     def updateTenant(self):
-        id = self.lblId.text()
+        id = self.lblId.text().split('-')
         fname = self.tbFname.text()
         lname = self.tbLname.text()
         bd = self.tbBirth.text()
@@ -291,18 +298,23 @@ class Tenant(QWidget):
             self.popupMessage("You must filled all fields!")
             return
         
-        data = postgres.query(f"UPDATE TENANT SET TEN_FNAME = '{fname}', TEN_LNAME = '{lname}', TEN_BIRTHDATE = '{bd}', TEN_ADDRESS = '{address}', TEN_PHONE = '{phone}', TEN_UPDATED_AT = CURRENT_TIMESTAMP WHERE TEN_ID = {id} RETURNING TEN_ID")
+        data = postgres.query(f"UPDATE PERSONAL SET PER_FNAME = '{fname}', PER_LNAME = '{lname}', PER_BIRTHDATE = '{bd}', PER_ADDRESS = '{address}', PER_PHONE = '{phone}', PER_UPDATED_AT = CURRENT_TIMESTAMP WHERE PER_ID = {id[0]} RETURNING PER_ID")
 
-        if data:            
-            data = postgres.query(f"UPDATE STALL SET STA_TYPE_ID = {category} WHERE TEN_ID = {id} RETURNING TEN_ID")
+        if data:    
+            data = postgres.query(f"UPDATE STALL SET STA_TYPE_ID = {category} WHERE TEN_ID = {id[1]} RETURNING TEN_ID")
             if data:
                 self.popupMessage("Tenant info updated!")
+                self.clearFields()
                 self.displayTable()
+            else:
+                self.popupMessage("Something went wrong!")
+        else:
+            self.popupMessage("Something went wrong!")
         
         self.clearFields()
         
     def removeTenant(self):
-        id = self.lblId.text()
+        id = self.lblId.text().split('-')[1]
         data = postgres.query(f"UPDATE TENANT SET TEN_STATUS = 'Removed', TEN_UPDATED_AT = CURRENT_TIMESTAMP WHERE TEN_ID = {id} RETURNING TEN_ID")
         if data:
             self.popupMessage("tenant info removed!")
@@ -327,7 +339,7 @@ class Tenant(QWidget):
     
     def displayTable(self):
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select("SELECT TEN_ID, TEN_LNAME, TEN_FNAME, TEN_PHONE, TEN_CREATED_AT FROM TENANT WHERE TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
+        data = postgres.select("SELECT TEN_ID, PER_LNAME, PER_FNAME, PER_PHONE, PER_CREATED_AT FROM TENANT INNER JOIN PERSONAL USING (PER_ID) WHERE TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
         
         self.table.setRowCount(len(data))
         row = 0 # default
@@ -347,19 +359,19 @@ class Tenant(QWidget):
         
         row = self.table.row(item[0])
         id = self.table.item(row, 0).text()
-        res = postgres.select(f"SELECT TEN_ID, TEN_FNAME, TEN_LNAME, TEN_BIRTHDATE, TEN_ADDRESS, TEN_PHONE, STA_TYPE_ID, STA_TYPE_NAME FROM TENANT INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_ID = '{id}' AND TEN_STATUS != 'Removed' ORDER BY TEN_ID")
+        res = postgres.select(f"SELECT PER_ID, TEN_ID, PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE, STA_TYPE_ID, STA_TYPE_NAME FROM PERSONAL INNER JOIN TENANT USING (PER_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_ID = '{id}' AND TEN_STATUS != 'Removed';")
         
         # fetch data from account id
         data = res[0]
         
-        self.lblTenant.setText("Employee ID:")
-        self.lblId.setText(str(data[0]))
-        self.tbFname.setText(data[1])
-        self.tbLname.setText(data[2])
-        self.tbBirth.setDate(QDate.fromString(str(data[3]), "yyyy-MM-dd"))
-        self.tbAdd.setText(data[4])
-        self.tbPhone.setText(data[5])
-        self.tbCat.setCurrentText(f"{data[6]} {data[7]}")
+        self.lblTenant.setText("Tenant ID:")
+        self.lblId.setText(str(data[0]) + "-" + str(data[1]))
+        self.tbFname.setText(data[2])
+        self.tbLname.setText(data[3])
+        self.tbBirth.setDate(QDate.fromString(str(data[4]), "yyyy-MM-dd"))
+        self.tbAdd.setText(data[5])
+        self.tbPhone.setText(data[6])
+        self.tbCat.setCurrentText(f"{data[7]} {data[8]}")
         
         # update buttons
         self.btnAdd.setVisible(False)

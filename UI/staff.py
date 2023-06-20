@@ -343,7 +343,7 @@ class Staff(QWidget):
         self.clearFields()
 
     def removeStaff(self):
-        id = self.lblId.text()
+        id = self.lblId.text().split('-')[1]
         data = postgres.query(f"UPDATE EMPLOYEE SET EMP_STATUS = 'Removed', EMP_UPDATED_AT = CURRENT_TIMESTAMP WHERE EMP_ID = {id} RETURNING EMP_ID")
         if data:
             self.popupMessage("staff info removed!")
