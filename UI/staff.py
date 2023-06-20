@@ -326,9 +326,9 @@ class Staff(QWidget):
         data = postgres.query(f"UPDATE PERSONAL SET PER_FNAME = '{fname}', PER_LNAME = '{lname}', PER_BIRTHDATE = '{bd}', PER_ADDRESS = '{address}', PER_PHONE = '{phone}', PER_UPDATED_AT = CURRENT_TIMESTAMP WHERE PER_ID = {id[0]} RETURNING PER_ID")
 
         if data:
-            data = postgres.query("UPDATE EMPLOYEE SET EMP_TYPE_ID = {acc_type} WHERE EMP_ID = {id[1]} RETURNING EMP_ID")
+            data = postgres.query(f"UPDATE EMPLOYEE SET EMP_TYPE_ID = {acc_type} WHERE EMP_ID = {id[1]} RETURNING EMP_ID")
             if data:
-                data = postgres.query(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', WHERE EMP_ID = {data[0]} RETURNING EMP_ID")
+                data = postgres.query(f"UPDATE ACCOUNT SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}' WHERE EMP_ID = {data[0]} RETURNING EMP_ID")
                 if data:
                     self.popupMessage("Staff info updated!")
                     self.clearFields()
@@ -411,17 +411,22 @@ class Staff(QWidget):
         self.tbBirth.setDate(QDate.fromString(str(data[7]), "yyyy-MM-dd"))
         self.tbAdd.setText(data[8])
         self.tbPhone.setText(data[9])
-        
-        # Disable position field section if the user is admin.
-        # The owner can change to their employees.
-        if self.cookies.data['type'] == 2:
-            self.tbPosition.setDisabled(True)
-        
+
         # update buttons
         self.btnAdd.setVisible(False)
         self.btnUpdate.setVisible(True)
         self.btnRemove.setVisible(True)
         self.btnClear.setVisible(True)
+                
+        # Disable position field section if the user is admin.
+        # The owner can change to their employees.
+        if self.cookies.data['type'] == 2:
+            self.tbPosition.setDisabled(True)
+            
+        # Admins can't remove themselves.
+        if self.cookies.data['type'] == data[4]:
+            self.btnRemove.setVisible(False)
+        
     
     # just to initialize the position
     def staffPos(self):
