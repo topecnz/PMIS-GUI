@@ -51,7 +51,7 @@ class Main(QDialog):
     def login_check(self):
         username = self.wLogin.tbUser.text()
         password = self.wLogin.tbPass.text()
-        data = postgres.select(f"SELECT EMP_ID, ACC_TYPE_ID, ACC_USERNAME FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_USERNAME = '{username}' AND ACC_PASSWORD = '{password}';")
+        data = postgres.select(f"SELECT EMP_ID, EMP_TYPE_ID, ACC_USERNAME FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_USERNAME = '{username}' AND ACC_PASSWORD = '{password}';")
         if data:
             data = data[0]
             cookies.data['id'] = data[0]
@@ -114,6 +114,7 @@ class Main(QDialog):
         widget.setCurrentWidget(self.wPayment)
         self.wPayment.displayTable()
         self.wPayment.clearFields()
+        self.wPayment.updatePaymentData() # to update tables for date due.
         self.wPayment.btnBack.clicked.connect(self.back)
 
     def report(self):        
