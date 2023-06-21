@@ -198,12 +198,11 @@ class Stall(QWidget):
     
     def validate(self):
         name = self.tbName.text()
-        desc = self.tbDescription.toPlainText()
         price = self.tbPrice.text()
         status = self.tbStatus.currentText()
         
         validate = [
-            name, desc, price, status
+            name, price, status
         ]
         found = True
         

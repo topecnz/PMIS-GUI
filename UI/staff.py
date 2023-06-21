@@ -241,7 +241,7 @@ class Staff(QWidget):
     def search(self):
         search = self.tbSearch.text()
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select(f"SELECT EMP_ID, PER_LNAME, PER_FNAME, PER_PHONE, PER_CREATED_AT FROM PERSONAL INNER JOIN EMPLOYEE USING (PER_ID) WHERE EMP_TYPE_ID != 3 AND EMP_STATUS != 'Removed' AND LOWER(CONCAT(EMP_ID, ' ', PER_FNAME, ' ', PER_LNAME)) LIKE LOWER('%{search}%') AND EMP_TYPE_ID != 3 ORDER BY EMP_ID")
+        data = postgres.select(f"SELECT EMP_ID, PER_LNAME, PER_FNAME, PER_PHONE, EMP_CREATED_AT FROM PERSON INNER JOIN EMPLOYEE USING (PER_ID) WHERE EMP_TYPE_ID != 3 AND EMP_STATUS != 'Removed' AND LOWER(CONCAT(EMP_ID, ' ', PER_FNAME, ' ', PER_LNAME)) LIKE LOWER('%{search}%') AND EMP_TYPE_ID != 3 ORDER BY EMP_ID")
         if data:
             self.table.setRowCount(len(data))
             row = 0 # default
@@ -291,11 +291,11 @@ class Staff(QWidget):
             self.popupMessage("You must filled all fields!")
             return
         
-        data = postgres.query(f"INSERT INTO PERSONAL (PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE, PER_TYPE_ID) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}', 1) RETURNING PER_ID")
+        data = postgres.query(f"INSERT INTO PERSON (PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE, PER_IS_EMP) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}', true) ON CONFLICT (PER_FNAME, PER_LNAME, PER_BIRTHDATE) DO UPDATE SET PER_ADDRESS = '{address}', PER_PHONE = '{phone}', PER_IS_EMP = true, PER_UPDATED_AT = CURRENT_TIMESTAMP RETURNING PER_ID")
         if data:
-            data = postgres.query(f"INSERT INTO EMPLOYEE (PER_ID, EMP_TYPE_ID) VALUES ({data[0]}, {acc_type}) RETURNING EMP_ID;")
+            data = postgres.query(f"INSERT INTO EMPLOYEE (PER_ID, EMP_TYPE_ID) VALUES ({data[0]}, {acc_type}) ON CONFLICT (PER_ID) DO UPDATE SET EMP_TYPE_ID = {acc_type}, EMP_STATUS = 'Active', EMP_UPDATED_AT = CURRENT_TIMESTAMP RETURNING EMP_ID;")
             if data:
-                data = postgres.query(f"INSERT INTO ACCOUNT (EMP_ID, ACC_USERNAME, ACC_PASSWORD) VALUES ({data[0]}, '{username}', '{password}') RETURNING EMP_ID;")
+                data = postgres.query(f"INSERT INTO ACCOUNT (EMP_ID, ACC_USERNAME, ACC_PASSWORD) VALUES ({data[0]}, '{username}', '{password}') ON CONFLICT (EMP_ID) DO UPDATE SET ACC_USERNAME = '{username}', ACC_PASSWORD = '{password}', ACC_UPDATED_AT = CURRENT_TIMESTAMP RETURNING EMP_ID;")
                 if data:
                     self.popupMessage("Staff info added!")
                     self.displayTable()
@@ -323,7 +323,7 @@ class Staff(QWidget):
             self.popupMessage("You must filled all fields!")
             return
 
-        data = postgres.query(f"UPDATE PERSONAL SET PER_FNAME = '{fname}', PER_LNAME = '{lname}', PER_BIRTHDATE = '{bd}', PER_ADDRESS = '{address}', PER_PHONE = '{phone}', PER_UPDATED_AT = CURRENT_TIMESTAMP WHERE PER_ID = {id[0]} RETURNING PER_ID")
+        data = postgres.query(f"UPDATE PERSON SET PER_FNAME = '{fname}', PER_LNAME = '{lname}', PER_BIRTHDATE = '{bd}', PER_ADDRESS = '{address}', PER_PHONE = '{phone}', PER_UPDATED_AT = CURRENT_TIMESTAMP WHERE PER_ID = {id[0]} RETURNING PER_ID")
 
         if data:
             data = postgres.query(f"UPDATE EMPLOYEE SET EMP_TYPE_ID = {acc_type} WHERE EMP_ID = {id[1]} RETURNING EMP_ID")
@@ -373,7 +373,7 @@ class Staff(QWidget):
     
     def displayTable(self):
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select("SELECT EMP_ID, PER_LNAME, PER_FNAME, PER_PHONE, PER_CREATED_AT FROM PERSONAL INNER JOIN EMPLOYEE USING (PER_ID) WHERE EMP_TYPE_ID != 3 AND EMP_STATUS != 'Removed' ORDER BY EMP_ID;")
+        data = postgres.select("SELECT EMP_ID, PER_LNAME, PER_FNAME, PER_PHONE, EMP_CREATED_AT FROM PERSON INNER JOIN EMPLOYEE USING (PER_ID) WHERE EMP_TYPE_ID != 3 AND EMP_STATUS != 'Removed' ORDER BY EMP_ID;")
         
         self.table.setRowCount(len(data))
         row = 0 # default
@@ -394,7 +394,7 @@ class Staff(QWidget):
         self.clearFields() # just to be sure
         row = self.table.row(item[0])
         id = self.table.item(row, 0).text()
-        res = postgres.select(f"SELECT PER_ID, EMP_ID, ACC_USERNAME, ACC_PASSWORD, EMP_TYPE_ID, PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) INNER JOIN PERSONAL USING (PER_ID) WHERE EMP_ID = '{id}' AND EMP_STATUS != 'Removed';")
+        res = postgres.select(f"SELECT PER_ID, EMP_ID, ACC_USERNAME, ACC_PASSWORD, EMP_TYPE_ID, PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE FROM ACCOUNT INNER JOIN EMPLOYEE USING (EMP_ID) INNER JOIN PERSON USING (PER_ID) WHERE EMP_ID = '{id}' AND EMP_STATUS != 'Removed';")
         
         # fetch data from account id
         data = res[0]
