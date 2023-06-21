@@ -230,7 +230,6 @@ class Tenant(QWidget):
             fname, lname, bd, address, phone, category
         ]
         found = True
-        print(validate)
         
         for v in validate:
             if not v:
@@ -242,7 +241,7 @@ class Tenant(QWidget):
     def search(self):
         search = self.tbSearch.text()
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select(f"SELECT TEN_ID, PER_LNAME, PER_FNAME, PER_PHONE, PER_CREATED_AT FROM TENANT INNER JOIN PERSONAL (PER_ID) WHERE TEN_STATUS != 'Removed' AND LOWER(CONCAT(TEN_ID, ' ', PER_FNAME, ' ', PER_LNAME)) LIKE LOWER('%{search}%') ORDER BY TEN_ID")
+        data = postgres.select(f"SELECT TEN_ID, PER_LNAME, PER_FNAME, PER_PHONE, TEN_CREATED_AT FROM TENANT INNER JOIN PERSON (PER_ID) WHERE TEN_STATUS != 'Removed' AND LOWER(CONCAT(TEN_ID, ' ', PER_FNAME, ' ', PER_LNAME)) LIKE LOWER('%{search}%') ORDER BY TEN_ID")
         if data:
             self.table.setRowCount(len(data))
             row = 0 # default
@@ -268,11 +267,11 @@ class Tenant(QWidget):
             self.popupMessage("You must filled all fields!")
             return
         
-        data = postgres.query(f"INSERT INTO PERSONAL (PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE, PER_TYPE_ID) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}', 2) RETURNING PER_ID")
+        data = postgres.query(f"INSERT INTO PERSON (PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE, PER_IS_EMP) VALUES ('{fname}', '{lname}', '{bd}', '{address}', '{phone}', true) ON CONFLICT (PER_FNAME, PER_LNAME, PER_BIRTHDATE) DO UPDATE SET PER_ADDRESS = '{address}', PER_PHONE = '{phone}', PER_IS_EMP = true, PER_UPDATED_AT = CURRENT_TIMESTAMP RETURNING PER_ID")
         if data:
-            data = postgres.query(f"INSERT INTO TENANT (PER_ID) VALUES ({data[0]}) RETURNING TEN_ID")
+            data = postgres.query(f"INSERT INTO TENANT (PER_ID) VALUES ({data[0]}) ON CONFLICT (PER_ID) DO UPDATE SET TEN_STATUS = 'Active', TEN_UPDATED_AT = CURRENT_TIMESTAMP RETURNING TEN_ID;")
             if data:
-                data = postgres.query(f"INSERT INTO STALL (STA_TYPE_ID, TEN_ID) VALUES ({category}, {data[0]}) RETURNING STA_ID;")
+                data = postgres.query(f"INSERT INTO STALL (STA_TYPE_ID, TEN_ID) VALUES ({category}, {data[0]}) ON CONFLICT (TEN_ID) DO UPDATE SET STA_TYPE_ID = {category},  STA_STATUS = 'Active', STA_UPDATED_AT = CURRENT_TIMESTAMP RETURNING STA_ID;")
                 if data:
                     self.popupMessage("Tenant info added!")
                     self.displayTable()
@@ -298,7 +297,7 @@ class Tenant(QWidget):
             self.popupMessage("You must filled all fields!")
             return
         
-        data = postgres.query(f"UPDATE PERSONAL SET PER_FNAME = '{fname}', PER_LNAME = '{lname}', PER_BIRTHDATE = '{bd}', PER_ADDRESS = '{address}', PER_PHONE = '{phone}', PER_UPDATED_AT = CURRENT_TIMESTAMP WHERE PER_ID = {id[0]} RETURNING PER_ID")
+        data = postgres.query(f"UPDATE PERSON SET PER_FNAME = '{fname}', PER_LNAME = '{lname}', PER_BIRTHDATE = '{bd}', PER_ADDRESS = '{address}', PER_PHONE = '{phone}', PER_UPDATED_AT = CURRENT_TIMESTAMP WHERE PER_ID = {id[0]} RETURNING PER_ID")
 
         if data:    
             data = postgres.query(f"UPDATE STALL SET STA_TYPE_ID = {category} WHERE TEN_ID = {id[1]} RETURNING TEN_ID")
@@ -339,7 +338,7 @@ class Tenant(QWidget):
     
     def displayTable(self):
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select("SELECT TEN_ID, PER_LNAME, PER_FNAME, PER_PHONE, PER_CREATED_AT FROM TENANT INNER JOIN PERSONAL USING (PER_ID) WHERE TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
+        data = postgres.select("SELECT TEN_ID, PER_LNAME, PER_FNAME, PER_PHONE, TEN_CREATED_AT FROM TENANT INNER JOIN PERSON USING (PER_ID) WHERE TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
         
         self.table.setRowCount(len(data))
         row = 0 # default
@@ -359,7 +358,7 @@ class Tenant(QWidget):
         
         row = self.table.row(item[0])
         id = self.table.item(row, 0).text()
-        res = postgres.select(f"SELECT PER_ID, TEN_ID, PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE, STA_TYPE_ID, STA_TYPE_NAME FROM PERSONAL INNER JOIN TENANT USING (PER_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_ID = '{id}' AND TEN_STATUS != 'Removed';")
+        res = postgres.select(f"SELECT PER_ID, TEN_ID, PER_FNAME, PER_LNAME, PER_BIRTHDATE, PER_ADDRESS, PER_PHONE, STA_TYPE_ID, STA_TYPE_NAME FROM PERSON INNER JOIN TENANT USING (PER_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_ID = '{id}' AND TEN_STATUS != 'Removed';")
         
         # fetch data from account id
         data = res[0]

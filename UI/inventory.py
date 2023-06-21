@@ -147,7 +147,7 @@ class Inventory(QWidget):
     def search(self):
         search = self.tbSearch.text()
         self.table.clearContents()
-        data = postgres.select(f"SELECT TEN_ID, STA_ID, STA_TYPE_NAME, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, TEN_CREATED_AT FROM TENANT INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE LOWER(CONCAT(TEN_ID, ' ', TEN_FNAME, ' ', TEN_LNAME, ' ', STA_ID, ' ', STA_TYPE_NAME)) LIKE LOWER('%{search}%') AND TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
+        data = postgres.select(f"SELECT TEN_ID, STA_ID, STA_TYPE_NAME, CONCAT(PER_FNAME, ' ', PER_LNAME) AS PER_NAME, TEN_CREATED_AT FROM PERSON INNER JOIN TENANT USING (PER_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE LOWER(CONCAT(TEN_ID, ' ', PER_FNAME, ' ', PER_LNAME, ' ', STA_ID, ' ', STA_TYPE_NAME)) LIKE LOWER('%{search}%') AND TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
         
         if data:
             self.table.setRowCount(len(data))
@@ -182,7 +182,7 @@ class Inventory(QWidget):
     
     def displayTable(self):
         self.table.clearContents() # clear everything before adding rows
-        data = postgres.select("SELECT TEN_ID, STA_ID, STA_TYPE_NAME, CONCAT(TEN_FNAME, ' ', TEN_LNAME) AS TEN_NAME, TEN_CREATED_AT FROM TENANT INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
+        data = postgres.select("SELECT TEN_ID, STA_ID, STA_TYPE_NAME, CONCAT(PER_FNAME, ' ', PER_LNAME) AS PER_NAME, TEN_CREATED_AT FROM PERSON INNER JOIN TENANT USING (PER_ID) INNER JOIN STALL USING (TEN_ID) INNER JOIN STALL_TYPE USING (STA_TYPE_ID) WHERE TEN_STATUS != 'Removed' ORDER BY TEN_ID;")
         
         self.table.setRowCount(len(data))
         row = 0 # default
