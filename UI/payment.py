@@ -270,7 +270,7 @@ class Payment(QWidget):
         self.btnClear.setVisible(True)
         
     def updatePaymentData(self):
-        data = postgres.query("UPDATE PAYMENT SET PAY_STATUS = CASE WHEN PAY_DUE_DATE < CURRENT_DATE THEN 'Overdue' ELSE PAY_STATUS END WHERE PAY_STATUS != 'Paid' RETURNING PAY_ID;")
+        data = postgres.query("UPDATE PAYMENT SET PAY_STATUS = CASE WHEN PAY_DUE_DATE < CURRENT_DATE THEN 'Overdue' ELSE PAY_STATUS END WHERE PAY_STATUS != 'Paid' AND PAY_STATUS != 'Cancelled' RETURNING PAY_ID;")
         if data:
             pass
         
