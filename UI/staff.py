@@ -163,7 +163,7 @@ class Staff(QWidget):
         self.tbPhone = QLineEdit(self)
         self.tbPhone.setGeometry(800, 580, 450, 30)
         self.tbPhone.setFont(QFont("Inter", 16, QFont.Weight.Normal))
-        self.tbPhone.setValidator(QIntValidator().setBottom(0))
+        self.tbPhone.setValidator(QRegularExpressionValidator(QRegularExpression(r"\d{0,12}")))
         
         self.btnAdd = QPushButton(self)
         self.btnAdd.setText("Add")
